@@ -58,6 +58,11 @@ describe('Portal user flows', () => {
     expect(screen.getByRole('heading', { name: 'ノート' })).toBeVisible()
     expect(document.querySelector('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow')
   })
+  it('shows the update history on the About page', () => {
+    open('/about')
+    expect(screen.getByRole('heading', { level: 2, name: '更新履歴' })).toBeVisible()
+    expect(screen.getByRole('link', { name: 'このサイトについて', current: 'page' })).toBeVisible()
+  })
   it('uses Not Found for missing projects and preserves text instead of rendering HTML', () => {
     const view = open('/projects/missing')
     expect(screen.getByRole('heading', { name: 'ページが見つかりません' })).toBeVisible()
