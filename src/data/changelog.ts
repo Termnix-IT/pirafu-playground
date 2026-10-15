@@ -8,6 +8,7 @@ export interface ChangelogEntry {
 }
 
 export const changelog: ChangelogEntry[] = [
+  { date: '2026-10-16', kind: 'site', text: 'ブラウザのタブやSNSで共有したときに表示されるアイコンと画像を追加しました。' },
   { date: '2026-10-16', kind: 'site', text: 'メニューの切り替えボタンを作り直し、このページに更新履歴を追加しました。' },
   { date: '2026-10-16', kind: 'site', text: 'ページの切り替えやカードに動きを加えました。' },
   { date: '2026-10-16', kind: 'site', text: 'サイトのデザインを一新しました。' },
