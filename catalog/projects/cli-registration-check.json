@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "id": "cli-registration-check",
+    "title": "CLI登録検証用（非掲載）",
+    "description": "pirafu registerの初回登録・更新・再実行を確認する検証用レコードです。",
+    "category": "tools",
+    "status": "archived",
+    "visibility": "hidden",
+    "tags": []
+  },
+  "launch": {
+    "type": "showcase"
+  },
+  "catalog": {
+    "featured": false
+  },
+  "publication": {
+    "visibility": "hidden",
+    "launchEnabled": false
+  }
+}
