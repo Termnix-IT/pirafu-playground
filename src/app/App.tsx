@@ -6,6 +6,7 @@ import { CatalogPage } from '../pages/CatalogPage'
 import { ProjectPage } from '../pages/ProjectPage'
 import { AboutPage } from '../pages/AboutPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
+import { LogoMark } from '../components/Icons'
 
 function RouteAccessibility({ catalog }: { catalog: Catalog }) {
   const { pathname } = useLocation()
@@ -28,13 +29,15 @@ export function App({ catalog }: { catalog: Catalog }) {
   return <>
     <a className="skip-link" href="#main">本文へ移動</a>
     <header className="site-header">
-      <Link to="/" className="site-name">Pirafu2411 Playground</Link>
-      <nav aria-label="メインナビゲーション">
-        <NavLink to="/" end>作品一覧</NavLink>
-        <NavLink to="/about">このサイトについて</NavLink>
-      </nav>
+      <div className="site-header__inner">
+        <Link to="/" className="site-logo"><LogoMark /><span>Pirafu2411 Playground</span></Link>
+        <nav aria-label="メインナビゲーション" className="site-nav">
+          <NavLink to="/" end>作品一覧</NavLink>
+          <NavLink to="/about">このサイトについて</NavLink>
+        </nav>
+      </div>
     </header>
-    <main id="main" tabIndex={-1}>
+    <main id="main" tabIndex={-1} className="site-main">
       <Routes>
         <Route path="/" element={<CatalogPage catalog={catalog} />} />
         <Route path="/projects/:id" element={<ProjectPage catalog={catalog} />} />
@@ -42,7 +45,12 @@ export function App({ catalog }: { catalog: Catalog }) {
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </main>
-    <footer><p>Pirafu2411 Playground</p></footer>
+    <footer className="site-footer">
+      <div className="site-footer__inner">
+        <p>Pirafu2411 Playground</p>
+        <Link to="/about">このサイトについて</Link>
+      </div>
+    </footer>
     <RouteAccessibility catalog={catalog} />
   </>
 }

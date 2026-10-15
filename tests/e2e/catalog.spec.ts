@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 const projectLink = (id: string) => `main a[href="/projects/${id}"]`
+const launchLinkName = /起動|アプリを開く|利用する|あそぶ|つかう/
 
 test('一覧から詳細へ移動し、直接アクセスと再読込ができる', async ({ page }) => {
   const failures: string[] = []
@@ -15,12 +16,12 @@ test('一覧から詳細へ移動し、直接アクセスと再読込ができ�
   await page.locator(projectLink('sample-tool')).click()
   await expect(page).toHaveURL(/\/projects\/sample-tool$/)
   await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toContainText(/構成サンプル/)
-  await expect(page.getByRole('link', { name: /起動|アプリを開く|利用する/ })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: launchLinkName })).toHaveCount(0)
   await page.reload()
   await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toBeVisible()
   await page.goto('/projects/sample-mini-game')
   await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toContainText(/構成サンプル/)
-  await expect(page.getByRole('link', { name: /起動|アプリを開く|利用する/ })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: launchLinkName })).toHaveCount(0)
   expect(failures).toEqual([])
 })
 
@@ -43,8 +44,7 @@ test('検索条件をURLで復元し、戻る操作と条件解除を利用で�
 
 test('カテゴリーと開発状況を組み合わせて絞り込める', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('combobox', { name: 'カテゴリー', exact: true }).selectOption('games')
-  await page.getByRole('button', { name: '絞り込む' }).click()
+  await page.getByRole('navigation', { name: 'カテゴリー' }).getByRole('link', { name: 'ミニゲーム' }).click()
   await expect(page).toHaveURL(/category=games/)
   await expect(page.locator(projectLink('sample-mini-game'))).toBeVisible()
   await expect(page.locator(projectLink('sample-tool'))).toHaveCount(0)
@@ -52,6 +52,7 @@ test('カテゴリーと開発状況を組み合わせて絞り込める', async
   await status.selectOption('archived')
   await page.getByRole('button', { name: '絞り込む' }).click()
   await expect(page).toHaveURL(/status=archived/)
+  await expect(page).toHaveURL(/category=games/)
   await expect(page.locator(projectLink('sample-mini-game'))).toHaveCount(0)
   await page.reload()
   await expect(status).toHaveValue('archived')
