@@ -61,9 +61,16 @@ async function verifyDist() {
     }
   }
 
+  // Fixed site icons and the share image are copied from public/ unchanged; nothing else may sit beside them.
+  const siteAssets = ['favicon.svg', 'apple-touch-icon.png', 'og-image.png'];
+  for (const name of siteAssets) {
+    assert(files.includes(name), `サイト用の固定ファイルがありません: ${name}`);
+    assert((await fs.readFile(path.join(dist, name))).equals(await fs.readFile(path.join(root, 'public', name))), `サイト用の固定ファイルが元ファイルと一致しません: ${name}`);
+  }
+
   let javascriptFiles = 0;
   for (const name of files) {
-    const permitted = name === 'index.html' || name === '_headers'
+    const permitted = name === 'index.html' || name === '_headers' || siteAssets.includes(name)
       || /^assets\/[^/]+\.(?:js|css)$/.test(name) || expectedMedia.has(name);
     assert(permitted, `許可していない配信ファイルです: ${name}`);
     const bytes = await fs.readFile(path.join(dist, name));
