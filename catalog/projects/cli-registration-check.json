@@ -3,7 +3,7 @@
   "project": {
     "id": "cli-registration-check",
     "title": "CLI登録検証用（非掲載）",
-    "description": "pirafu registerの初回登録・更新・再実行を確認する検証用レコードです。",
+    "description": "pirafu registerによる登録・更新・同一内容での再実行を検証する非掲載レコードです。",
     "category": "tools",
     "status": "archived",
     "visibility": "hidden",
