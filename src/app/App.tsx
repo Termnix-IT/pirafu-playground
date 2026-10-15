@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Link, NavLink, Route, Routes, useLocation } from 'react-router'
+import { Link, Route, Routes, useLocation } from 'react-router'
 import type { Catalog } from '../features/catalog/types'
 import { findProject } from '../features/catalog/selectors'
 import { CatalogPage } from '../pages/CatalogPage'
@@ -29,23 +29,41 @@ function RouteAccessibility({ catalog }: { catalog: Catalog }) {
   return null
 }
 
+const navItems = [
+  { to: '/', label: '作品一覧', matches: (pathname: string) => pathname === '/' || pathname.startsWith('/projects/') },
+  { to: '/about', label: 'このサイトについて', matches: (pathname: string) => pathname === '/about' },
+]
+
+// A segmented switch. Every item keeps the same font weight so labels never shift, and only the
+// selected item holds the indicator, which the view transition slides from the old item to the new one.
+function SiteNav() {
+  const { pathname } = useLocation()
+  return <nav aria-label="メインナビゲーション" className="site-nav">
+    {navItems.map((item) => {
+      const selected = item.matches(pathname)
+      return <Link key={item.to} to={item.to} className={selected ? 'is-selected' : undefined}
+        aria-current={pathname === item.to ? 'page' : selected ? 'true' : undefined}>
+        {selected && <span className="nav-indicator" aria-hidden="true" />}
+        <span className="nav-label">{item.label}</span>
+      </Link>
+    })}
+  </nav>
+}
+
 export function App({ catalog }: { catalog: Catalog }) {
   return <>
     <a className="skip-link" href="#main">本文へ移動</a>
     <header className="site-header">
       <div className="site-header__inner">
         <Link to="/" className="site-logo"><LogoMark /><span>Pirafu2411 Playground</span></Link>
-        <nav aria-label="メインナビゲーション" className="site-nav">
-          <NavLink to="/" end>作品一覧</NavLink>
-          <NavLink to="/about">このサイトについて</NavLink>
-        </nav>
+        <SiteNav />
       </div>
     </header>
     <main id="main" tabIndex={-1} className="site-main">
       <Routes>
         <Route path="/" element={<CatalogPage catalog={catalog} />} />
         <Route path="/projects/:id" element={<ProjectPage catalog={catalog} />} />
-        <Route path="/about" element={<AboutPage />} />
+        <Route path="/about" element={<AboutPage catalog={catalog} />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </main>
