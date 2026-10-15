@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "id": "sample-hidden",
+    "title": "非掲載検証用の作品",
+    "description": "hidden-record-content-must-not-be-delivered",
+    "category": "tools",
+    "status": "archived",
+    "visibility": "public",
+    "tags": []
+  },
+  "launch": { "type": "external", "url": "https://example.com/sample-hidden/" },
+  "catalog": {
+    "featured": false,
+    "thumbnail": { "path": "media/sample-hidden/thumbnail.png", "alt": "非掲載画像の配信除外を検証する画像" },
+    "screenshots": []
+  },
+  "publication": { "visibility": "hidden", "launchEnabled": false }
+}

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "id": "sample-unlisted",
+    "title": "一覧外の紹介（構成サンプル）",
+    "description": "unlistedの詳細表示を検証する架空の作品です。掲載状態はアクセス制御ではなく、この情報は配信データからも確認できます。",
+    "category": "other",
+    "status": "archived",
+    "visibility": "unlisted",
+    "tags": []
+  },
+  "launch": { "type": "showcase" },
+  "catalog": { "featured": false, "screenshots": [] },
+  "publication": { "visibility": "unlisted", "launchEnabled": false }
+}

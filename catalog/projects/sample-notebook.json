@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "id": "sample-notebook",
+    "title": "メモアプリ（構成サンプル）",
+    "description": "カテゴリーとタグによる検索を確認するための架空の作品です。アプリは未公開で、起動リンクは表示しません。",
+    "category": "apps",
+    "status": "planned",
+    "visibility": "public",
+    "tags": ["note", "browser"]
+  },
+  "launch": { "type": "external", "url": "https://example.com/sample-notebook/" },
+  "catalog": { "featured": false, "screenshots": [] },
+  "publication": { "visibility": "public", "launchEnabled": false }
+}

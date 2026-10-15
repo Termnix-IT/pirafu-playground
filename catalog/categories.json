@@ -1,0 +1,6 @@
+[
+  { "id": "apps", "label": "Webアプリ" },
+  { "id": "games", "label": "ミニゲーム" },
+  { "id": "tools", "label": "ツール" },
+  { "id": "other", "label": "その他" }
+]

@@ -1,0 +1,13 @@
+node_modules/
+dist/
+src/data/generated/
+public/generated/
+*.tsbuildinfo
+output/
+test-results/
+playwright-report/
+.env
+.env.*
+!.env.example
+*.local
+.DS_Store

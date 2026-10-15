@@ -1,0 +1,52 @@
+{
+  "name": "pirafu-playground",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=24.13.1 <25",
+    "npm": ">=11 <12"
+  },
+  "scripts": {
+    "dev": "node scripts/prepare-catalog.mjs && vite --host 127.0.0.1",
+    "catalog:check": "node scripts/validate-catalog.mjs",
+    "catalog:prepare": "node scripts/prepare-catalog.mjs",
+    "lint": "eslint .",
+    "typecheck": "node scripts/prepare-catalog.mjs && tsc -b",
+    "test": "node scripts/prepare-catalog.mjs && vitest run",
+    "test:watch": "node scripts/prepare-catalog.mjs && vitest",
+    "build": "node scripts/prepare-catalog.mjs && tsc -b && vite build && node scripts/verify-dist.mjs",
+    "preview": "vite preview --host 127.0.0.1",
+    "browser:install": "node scripts/browser-tests.mjs install",
+    "test:e2e": "node scripts/browser-tests.mjs test",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build"
+  },
+  "dependencies": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-router": "8.4.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.1",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.8",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "eslint": "10.12.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-refresh": "0.5.7",
+    "globals": "17.13.0",
+    "jsdom": "29.1.1",
+    "sharp": "0.35.5",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.2",
+    "vite": "8.3.4",
+    "vitest": "5.0.4"
+  }
+}

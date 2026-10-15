@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "id": "sample-tool",
+    "title": "管理ツールの紹介（構成サンプル）",
+    "description": "紹介専用作品の構成サンプルです。説明と画像だけを掲載する形式で、管理環境への接続先や認証情報は含みません。",
+    "category": "tools",
+    "status": "maintenance",
+    "visibility": "public",
+    "tags": ["showcase", "tool"]
+  },
+  "launch": { "type": "showcase" },
+  "catalog": { "featured": false, "screenshots": [] },
+  "publication": { "visibility": "public", "launchEnabled": false }
+}

@@ -1,0 +1,36 @@
+/* Temporary functional layout. No final brand or component design is defined here. */
+:root { font-family: system-ui, sans-serif; line-height: 1.65; color: #202020; background: #fff; }
+* { box-sizing: border-box; }
+body { margin: 0 auto; max-width: 72rem; padding: 1rem; overflow-wrap: anywhere; }
+a { color: #164e94; text-underline-offset: .15em; }
+a:hover { text-decoration-thickness: .15em; }
+:focus-visible { outline: 3px solid #164e94; outline-offset: 3px; }
+h1:focus { outline: none; }
+.skip-link { position: absolute; left: 1rem; top: -5rem; background: #fff; padding: .5rem; z-index: 1; }
+.skip-link:focus { top: .5rem; }
+.site-header, nav, .catalog-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
+.site-header { justify-content: space-between; border-bottom: 1px solid #aaa; padding: 1rem 0; }
+.site-name { font-weight: bold; }
+nav [aria-current="page"] { font-weight: bold; }
+main { min-height: 65vh; padding: 1rem 0; }
+.catalog-filters { align-items: end; padding-block: 1rem; }
+.catalog-filters > div { display: grid; gap: .25rem; min-width: 0; }
+input, select, button { font: inherit; max-width: 100%; min-height: 2.75rem; padding: .4rem .65rem; }
+button { cursor: pointer; }
+.project-list { padding: 0; list-style: none; }
+.project-list > li { border-top: 1px solid #ccc; padding-block: 1rem; }
+.project-list h2 { margin-top: 0; }
+.project-meta { color: #444; }
+.project-description { white-space: pre-wrap; }
+dl { display: grid; grid-template-columns: max-content 1fr; gap: .35rem 1rem; }
+dt { font-weight: bold; }
+dd { margin: 0; }
+figure { margin: 1rem 0; }
+img { display: block; max-width: 100%; height: auto; }
+footer { border-top: 1px solid #aaa; padding-top: 1rem; }
+@media (max-width: 40rem) {
+  .catalog-filters { align-items: stretch; }
+  .catalog-filters > div { width: 100%; }
+  .catalog-filters input, .catalog-filters select { width: 100%; }
+  .site-header { align-items: start; flex-direction: column; }
+}
