@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { findProject, readFilters, selectProjects, writeFilters } from '../src/features/catalog/selectors'
+import { findProject, readFilters, selectProjects, selectRelatedProjects, writeFilters } from '../src/features/catalog/selectors'
 import type { CatalogProject } from '../src/features/catalog/types'
 
 const project = (id: string, properties: Partial<CatalogProject> = {}): CatalogProject => ({
@@ -24,6 +24,13 @@ describe('catalog selectors', () => {
     const data = [project('z', { title: 'same' }), project('a', { title: 'same' }), project('featured', { title: 'zzz', featured: true })]
     expect(selectProjects(data, empty).map(({ id }) => id)).toEqual(['featured', 'a', 'z'])
     expect(data[0].id).toBe('z')
+  })
+  it('relates listed projects of the same category without the current one', () => {
+    const current = project('current', { category: 'games' })
+    const data = [current, project('b', { category: 'games' }), project('a', { category: 'games' }), project('pick', { category: 'games', title: 'zzz', featured: true }),
+      project('hidden', { category: 'games', visibility: 'unlisted' }), project('other')]
+    expect(selectRelatedProjects(data, current).map(({ id }) => id)).toEqual(['pick', 'a', 'b'])
+    expect(selectRelatedProjects(data, current, 2).map(({ id }) => id)).toEqual(['pick', 'a'])
   })
   it('serializes only known filters and restores bookmarked conditions', () => {
     const params = writeFilters({ query: ' note ', category: 'apps', status: 'planned' })
