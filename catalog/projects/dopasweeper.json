@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "id": "dopasweeper",
+    "title": "DOPASWEEPER",
+    "description": "連鎖・コンボ・フィーバー演出を楽しむ、60秒タイムアタックのマインスイーパー。地雷を踏んでも時間ペナルティで続行できます。",
+    "category": "games",
+    "status": "in-development",
+    "visibility": "public",
+    "tags": [
+      "マインスイーパー",
+      "タイムアタック"
+    ]
+  },
+  "launch": {
+    "type": "external",
+    "url": "https://pirafu-dopasweeper.pages.dev"
+  },
+  "catalog": {
+    "featured": false,
+    "screenshots": []
+  },
+  "publication": {
+    "visibility": "public",
+    "launchEnabled": true
+  }
+}
