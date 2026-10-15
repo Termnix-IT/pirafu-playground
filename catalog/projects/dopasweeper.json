@@ -18,7 +18,16 @@
   },
   "catalog": {
     "featured": true,
-    "screenshots": []
+    "thumbnail": {
+      "path": "media/dopasweeper/b02168cd815881b79a82cc04ceb59382b3ce3db095514588144023570390ebbd.png",
+      "alt": "DOPASWEEPERのロゴと「60秒 ドーパミン・マインスイーパー」のキャッチコピー"
+    },
+    "screenshots": [
+      {
+        "path": "media/dopasweeper/777b5d0128b4c48325edd48f1ae4063536f08387ab130eb2d0ed4322d6320061.png",
+        "alt": "タイトル画面。タップで開ける・長押しで爆弾判定などの遊び方の説明、STARTボタン、演出控えめの切り替え、ベストスコアが並ぶ"
+      }
+    ]
   },
   "publication": {
     "visibility": "public",
