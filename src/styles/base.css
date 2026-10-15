@@ -47,7 +47,7 @@ input, select, button { font: inherit; color: inherit; }
 .skip-link:focus { top: 1rem; color: #fff; }
 
 /* Site frame */
-.site-header { border-bottom: 1px solid var(--border); background: var(--surface); }
+.site-header { border-bottom: 1px solid var(--border); background: var(--surface); view-transition-name: site-header; }
 .site-header__inner, .site-footer__inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1.5rem; max-width: var(--content); margin: 0 auto; padding: .75rem var(--gutter); }
 .site-logo { display: inline-flex; align-items: center; gap: .65rem; min-height: 2.75rem; color: var(--text); font-size: 1.125rem; font-weight: 800; letter-spacing: .01em; text-decoration: none; }
 .site-logo:hover { color: var(--text); }
@@ -83,9 +83,12 @@ h1, h2, h3, .page-intro p { word-break: auto-phrase; text-wrap: pretty; }
 .category-art { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; width: 100%; height: 100%; background-color: var(--tone-bg); background-image: radial-gradient(color-mix(in srgb, var(--tone-ink) 22%, transparent) 1.2px, transparent 1.6px); background-size: 14px 14px; color: var(--tone-ink); font-size: .9375rem; font-weight: 700; }
 
 /* Play button: the amber key cap works like an arcade button and sinks when pressed. */
-.play-button { display: inline-flex; align-items: center; justify-content: center; gap: .6rem; min-height: 3.25rem; padding: 0 1.6rem; border-radius: var(--radius-md); background: var(--play); color: var(--play-ink); font-size: 1.125rem; font-weight: 800; letter-spacing: .04em; text-decoration: none; box-shadow: inset 0 -4px 0 var(--play-edge), 0 2px 0 rgb(29 28 25 / .15); transition: transform .08s, box-shadow .08s, background-color .15s; }
+.play-button { position: relative; isolation: isolate; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: .6rem; min-height: 3.25rem; padding: 0 1.6rem; border-radius: var(--radius-md); background: var(--play); color: var(--play-ink); font-size: 1.125rem; font-weight: 800; letter-spacing: .04em; text-decoration: none; box-shadow: inset 0 -4px 0 var(--play-edge), 0 2px 0 rgb(29 28 25 / .15); transition: transform .28s cubic-bezier(.34, 1.56, .64, 1), box-shadow .28s cubic-bezier(.34, 1.56, .64, 1), background-color .15s; }
 .play-button:hover { background: var(--play-hover); color: var(--play-ink); }
-.play-button:active { transform: translateY(2px); box-shadow: inset 0 -2px 0 var(--play-edge); }
+/* Press sinks quickly; release springs back past the rest position through the overshooting easing above. */
+.play-button:active { transform: translateY(3px) scale(.97); box-shadow: inset 0 -1px 0 var(--play-edge); transition-duration: .06s; }
+.play-button::after { content: ""; position: absolute; inset: 0 auto 0 0; z-index: -1; width: 35%; background: rgb(255 255 255 / .42); transform: translateX(-150%) skewX(-20deg); animation: play-shine 5s ease-in-out 1.2s infinite; pointer-events: none; }
+.play-button:hover::after { animation-duration: 1.4s; animation-delay: 0s; }
 .play-button__note { font-size: .8125rem; font-weight: 600; letter-spacing: 0; }
 .play-button--large { width: 100%; min-height: 3.75rem; font-size: 1.375rem; }
 .launch-state { display: flex; align-items: center; justify-content: center; gap: .55rem; min-height: 3.25rem; margin: 0; padding: .5rem 1rem; border: 1px dashed var(--input-border); border-radius: var(--radius-md); background: var(--surface-muted); font-weight: 700; text-align: center; }
@@ -193,7 +196,31 @@ h1, h2, h3, .page-intro p { word-break: auto-phrase; text-wrap: pretty; }
   .field--grow { flex-basis: 100%; }
   .field:not(.field--grow) { flex: 1 1 9rem; }
 }
+/* Motion
+   - First load: cards rise in one after another. App sets data-navigated after the first page change.
+   - Page and filter changes: React <ViewTransition> names the cards, card images and titles;
+     the browser morphs matching names and slides remaining cards to their new places.
+   - Hover: card icons wiggle and the dot pattern drifts; it stays still otherwise. */
+@keyframes rise-in { from { opacity: 0; transform: translateY(18px); } }
+@keyframes icon-wiggle { 25% { transform: rotate(-14deg); } 50% { transform: rotate(11deg); } 75% { transform: rotate(-5deg); } }
+@keyframes dots-drift { to { background-position: 14px 14px; } }
+@keyframes dots-drift-small { to { background-position: 10px 10px; } }
+@keyframes play-shine { 0% { transform: translateX(-150%) skewX(-20deg); } 25%, 100% { transform: translateX(420%) skewX(-20deg); } }
+html:not([data-navigated]) .project-grid > li { animation: rise-in .5s cubic-bezier(.2, .8, .2, 1) backwards; }
+.project-grid > li:nth-child(2) { animation-delay: 70ms; }
+.project-grid > li:nth-child(3) { animation-delay: 140ms; }
+.project-grid > li:nth-child(4) { animation-delay: 210ms; }
+.project-grid > li:nth-child(5) { animation-delay: 280ms; }
+.project-grid > li:nth-child(6) { animation-delay: 350ms; }
+.project-grid > li:nth-child(n + 7) { animation-delay: 420ms; }
+.project-card:hover .project-meta .icon, .project-card:hover .category-art .icon, .chip:hover .icon { animation: icon-wiggle .5s ease-in-out; }
+.project-card:hover .category-art { animation: dots-drift 1.4s linear infinite; }
+.mini-card:hover .category-art { animation: dots-drift-small 1s linear infinite; }
+::view-transition-group(*) { animation-duration: .45s; animation-timing-function: cubic-bezier(.2, .8, .2, 1); }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .25s; }
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { transition: none !important; }
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
   .project-card:hover, .play-button:active { transform: none; }
 }

@@ -87,3 +87,14 @@ test('狭い画面でキーボードから検索でき、横にはみ出さな�
   await expect(page.locator('main a[href^="/projects/"]')).toHaveCount(0)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 })
+
+test('動きを減らす設定では入場アニメーションを止め、遷移はそのまま使える', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  const card = page.locator('.project-grid > li').first()
+  await expect(card).toBeVisible()
+  expect(await card.evaluate((element) => getComputedStyle(element).animationName)).toBe('none')
+  await page.locator(projectLink('sample-tool')).click()
+  await expect(page).toHaveURL(/\/projects\/sample-tool$/)
+  await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toBeFocused()
+})
