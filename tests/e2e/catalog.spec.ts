@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test'
 
 const projectLink = (id: string) => `main a[href="/projects/${id}"]`
+const launchLinkName = /起動|アプリを開く|利用する|あそぶ|つかう/
 
 test('一覧から詳細へ移動し、直接アクセスと再読込ができる', async ({ page }) => {
   const failures: string[] = []
   page.on('pageerror', (error) => failures.push(error.message))
   await page.goto('/')
-  await expect(page.locator(projectLink('sample-mini-game'))).toBeVisible()
   await expect(page.locator(projectLink('sample-tool'))).toBeVisible()
   await expect(page.locator(projectLink('sample-notebook'))).toBeVisible()
   await expect(page.locator(projectLink('sample-unlisted'))).toHaveCount(0)
@@ -15,12 +15,12 @@ test('一覧から詳細へ移動し、直接アクセスと再読込ができ�
   await page.locator(projectLink('sample-tool')).click()
   await expect(page).toHaveURL(/\/projects\/sample-tool$/)
   await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toContainText(/構成サンプル/)
-  await expect(page.getByRole('link', { name: /起動|アプリを開く|利用する/ })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: launchLinkName })).toHaveCount(0)
   await page.reload()
   await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toBeVisible()
-  await page.goto('/projects/sample-mini-game')
+  await page.goto('/projects/sample-notebook')
   await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toContainText(/構成サンプル/)
-  await expect(page.getByRole('link', { name: /起動|アプリを開く|利用する/ })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: launchLinkName })).toHaveCount(0)
   expect(failures).toEqual([])
 })
 
@@ -43,16 +43,16 @@ test('検索条件をURLで復元し、戻る操作と条件解除を利用で�
 
 test('カテゴリーと開発状況を組み合わせて絞り込める', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('combobox', { name: 'カテゴリー', exact: true }).selectOption('games')
-  await page.getByRole('button', { name: '絞り込む' }).click()
-  await expect(page).toHaveURL(/category=games/)
-  await expect(page.locator(projectLink('sample-mini-game'))).toBeVisible()
+  await page.getByRole('navigation', { name: 'カテゴリー' }).getByRole('link', { name: 'Webアプリ' }).click()
+  await expect(page).toHaveURL(/category=apps/)
+  await expect(page.locator(projectLink('sample-notebook'))).toBeVisible()
   await expect(page.locator(projectLink('sample-tool'))).toHaveCount(0)
   const status = page.getByRole('combobox', { name: '開発状況', exact: true })
   await status.selectOption('archived')
   await page.getByRole('button', { name: '絞り込む' }).click()
   await expect(page).toHaveURL(/status=archived/)
-  await expect(page.locator(projectLink('sample-mini-game'))).toHaveCount(0)
+  await expect(page).toHaveURL(/category=apps/)
+  await expect(page.locator(projectLink('sample-notebook'))).toHaveCount(0)
   await page.reload()
   await expect(status).toHaveValue('archived')
 })
@@ -85,4 +85,28 @@ test('狭い画面でキーボードから検索でき、横にはみ出さな�
   await expect(page).toHaveURL(/q=/)
   await expect(page.locator('main a[href^="/projects/"]')).toHaveCount(0)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+})
+
+test('動きを減らす設定では入場アニメーションを止め、遷移はそのまま使える', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  const card = page.locator('.project-grid > li').first()
+  await expect(card).toBeVisible()
+  expect(await card.evaluate((element) => getComputedStyle(element).animationName)).toBe('none')
+  await page.locator(projectLink('sample-tool')).click()
+  await expect(page).toHaveURL(/\/projects\/sample-tool$/)
+  await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toBeFocused()
+})
+
+test('メニューは選択中の項目だけを示し、切り替えても文字の位置が変わらない', async ({ page }) => {
+  await page.goto('/')
+  const nav = page.getByRole('navigation', { name: 'メインナビゲーション' })
+  const labels = nav.locator('.nav-label')
+  const before = await labels.evaluateAll((items) => items.map((item) => item.getBoundingClientRect().left))
+  await nav.getByRole('link', { name: 'このサイトについて' }).click()
+  await expect(page).toHaveURL(/\/about$/)
+  await expect(nav.getByRole('link', { name: 'このサイトについて' })).toHaveAttribute('aria-current', 'page')
+  await expect(nav.locator('.nav-indicator')).toHaveCount(1)
+  expect(await labels.evaluateAll((items) => items.map((item) => item.getBoundingClientRect().left))).toEqual(before)
+  await expect(page.getByRole('heading', { name: '更新履歴' })).toBeVisible()
 })

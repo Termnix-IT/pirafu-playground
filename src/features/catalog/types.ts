@@ -28,3 +28,8 @@ export const statusLabels: Record<DevelopmentStatus, string> = {
   maintenance: '保守中',
   archived: '開発終了',
 }
+
+export const launchTypeLabels: Record<CatalogProject['launch']['type'], string> = {
+  external: 'ブラウザアプリ',
+  showcase: '紹介のみ',
+}

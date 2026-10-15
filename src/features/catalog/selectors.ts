@@ -27,6 +27,12 @@ export function selectProjects(projects: CatalogProject[], filters: CatalogFilte
     || a.title.localeCompare(b.title, 'ja') || a.id.localeCompare(b.id, 'en'))
 }
 
+export function selectRelatedProjects(projects: CatalogProject[], project: CatalogProject, limit = 3): CatalogProject[] {
+  return selectProjects(projects, { query: '', category: project.category, status: '' })
+    .filter(({ id }) => id !== project.id)
+    .slice(0, limit)
+}
+
 export function findProject(projects: CatalogProject[], id: string | undefined): CatalogProject | undefined {
   return projects.find((project) => project.id === id)
 }

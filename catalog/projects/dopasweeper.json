@@ -17,7 +17,7 @@
     "url": "https://pirafu-dopasweeper.pages.dev"
   },
   "catalog": {
-    "featured": false,
+    "featured": true,
     "screenshots": []
   },
   "publication": {

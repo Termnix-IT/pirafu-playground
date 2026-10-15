@@ -19,7 +19,8 @@ describe('Portal user flows', () => {
   it('restores bookmarked filters and displays the matching count', async () => {
     open('/?q=note&category=apps')
     expect(screen.getByLabelText('タイトル・タグ')).toHaveValue('note')
-    expect(screen.getByLabelText('カテゴリー')).toHaveValue('apps')
+    expect(screen.getByRole('link', { name: 'Webアプリ' })).toHaveAttribute('aria-current', 'true')
+    expect(screen.getByRole('link', { name: 'すべて' })).toHaveAttribute('href', '/?q=note')
     expect(screen.getByRole('status')).toHaveTextContent('1件')
     await userEvent.clear(screen.getByLabelText('タイトル・タグ'))
     await userEvent.type(screen.getByLabelText('タイトル・タグ'), 'ない作品')
@@ -32,18 +33,22 @@ describe('Portal user flows', () => {
     await userEvent.click(screen.getByRole('link', { name: 'ノート' }))
     expect(screen.getByRole('heading', { level: 1, name: 'ノート' })).toHaveFocus()
     expect(document.title).toBe('ノート | Pirafu2411 Playground')
-    const link = screen.getByRole('link', { name: 'アプリを開く（別タブ）' })
+    const link = screen.getByRole('link', { name: 'つかう（別タブ）' })
     expect(link).toHaveAttribute('href', 'https://example.com/app/')
     expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+  })
+  it('labels the launch link for games as playing', () => {
+    open('/projects/demo', { ...base, category: 'games' })
+    expect(screen.getByRole('link', { name: 'あそぶ（別タブ）' })).toHaveAttribute('href', 'https://example.com/app/')
   })
   it('never displays a launch link for disabled or showcase projects', () => {
     const view = open('/projects/demo', { ...base, launchEnabled: false })
     expect(screen.getByText('現在は起動できません。')).toBeVisible()
-    expect(screen.queryByRole('link', { name: /アプリを開く/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /あそぶ|つかう/ })).not.toBeInTheDocument()
     view.unmount()
     open('/projects/demo', { ...base, launch: { type: 'showcase' }, launchEnabled: false })
     expect(screen.getByText('この作品は紹介のみです。')).toBeVisible()
-    expect(screen.queryByRole('link', { name: /アプリを開く/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /あそぶ|つかう/ })).not.toBeInTheDocument()
   })
   it('omits unlisted projects from the list but permits their detail with a noindex hint', () => {
     const view = open('/', { ...base, visibility: 'unlisted' })
@@ -52,6 +57,11 @@ describe('Portal user flows', () => {
     open('/projects/demo', { ...base, visibility: 'unlisted' })
     expect(screen.getByRole('heading', { name: 'ノート' })).toBeVisible()
     expect(document.querySelector('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow')
+  })
+  it('shows the update history on the About page', () => {
+    open('/about')
+    expect(screen.getByRole('heading', { level: 2, name: '更新履歴' })).toBeVisible()
+    expect(screen.getByRole('link', { name: 'このサイトについて', current: 'page' })).toBeVisible()
   })
   it('uses Not Found for missing projects and preserves text instead of rendering HTML', () => {
     const view = open('/projects/missing')
