@@ -1,3 +1,4 @@
+import { ViewTransition } from 'react'
 import { Link, useParams } from 'react-router'
 import { findProject, selectRelatedProjects, writeFilters } from '../features/catalog/selectors'
 import { launchTypeLabels, statusLabels } from '../features/catalog/types'
@@ -33,7 +34,7 @@ export function ProjectPage({ catalog }: { catalog: Catalog }) {
           <li><StatusPill status={project.status} /></li>
           <li><span className="pill">{launchTypeLabels[project.launch.type]}</span></li>
         </ul>
-        <h1 tabIndex={-1}>{project.title}</h1>
+        <ViewTransition name={`title-${project.id}`}><h1 tabIndex={-1}>{project.title}</h1></ViewTransition>
       </div>
       <div className="project-hero__actions">
         <LaunchAction project={project} large />
@@ -43,7 +44,7 @@ export function ProjectPage({ catalog }: { catalog: Catalog }) {
         </ul>}
       </div>
     </div>
-    <MediaGallery key={project.id} thumbnail={project.thumbnail} screenshots={project.screenshots} />
+    <MediaGallery key={project.id} transitionName={`media-${project.id}`} thumbnail={project.thumbnail} screenshots={project.screenshots} />
     <div className="project-body">
       <section aria-labelledby="about-title" className="project-about">
         <h2 id="about-title" className="section-title">作品について</h2>

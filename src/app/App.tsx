@@ -19,7 +19,11 @@ function RouteAccessibility({ catalog }: { catalog: Catalog }) {
     let robots = document.querySelector<HTMLMetaElement>('meta[name="robots"]')
     if (!robots) { robots = document.createElement('meta'); robots.name = 'robots'; document.head.append(robots) }
     robots.content = project?.visibility === 'unlisted' ? 'noindex, nofollow' : 'index, follow'
-    if (previousPath.current !== pathname) document.querySelector<HTMLElement>('main h1')?.focus()
+    if (previousPath.current !== pathname) {
+      document.querySelector<HTMLElement>('main h1')?.focus()
+      // The staggered entrance is for the first page load only; later page changes use view transitions.
+      document.documentElement.dataset.navigated = ''
+    }
     previousPath.current = pathname
   }, [pathname, catalog])
   return null
