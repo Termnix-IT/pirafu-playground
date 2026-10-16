@@ -8,6 +8,7 @@ export interface ChangelogEntry {
 }
 
 export const changelog: ChangelogEntry[] = [
+  { date: '2026-10-16', kind: 'site', text: 'デザインをダークテーマにリニューアル' },
   { date: '2026-10-16', kind: 'site', text: 'サイト内の文章を見直し' },
   { date: '2026-10-16', kind: 'site', text: 'タブとSNS共有用のアイコン・画像を追加' },
   { date: '2026-10-16', kind: 'site', text: 'メニューのボタンを改善、更新履歴を追加' },

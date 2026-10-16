@@ -18,7 +18,8 @@ export const ArrowLeftIcon = ({ size }: IconProps) => <Icon size={size}><path d=
 export const ExternalIcon = ({ size }: IconProps) => <Icon size={size}><path d="M14 4h6v6M20 4l-8.5 8.5M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" /></Icon>
 export const CodeIcon = ({ size }: IconProps) => <Icon size={size}><path d="M8.5 7.5L4 12l4.5 4.5M15.5 7.5L20 12l-4.5 4.5" /></Icon>
 export const BanIcon = ({ size }: IconProps) => <Icon size={size}><circle cx="12" cy="12" r="8" /><path d="M6.5 6.5l11 11" /></Icon>
-export const DocIcon = ({ size }: IconProps) => <Icon size={size}><path d="M7 3.5h7l4 4v13H7z" /><path d="M14 3.5v4h4M9.5 12h6M9.5 15.5h6" /></Icon>
+export const PlusIcon = ({ size }: IconProps) => <Icon size={size}><path d="M12 5v14M5 12h14" /></Icon>
+export const DocIcon =({ size }: IconProps) => <Icon size={size}><path d="M7 3.5h7l4 4v13H7z" /><path d="M14 3.5v4h4M9.5 12h6M9.5 15.5h6" /></Icon>
 
 export function CategoryIcon({ category, size }: { category: string } & IconProps) {
   switch (category) {
