@@ -39,7 +39,7 @@ npm run catalog:check  # 作品レコードと画像だけを検査
 - アクセシビリティ：本物のリンクとボタンを使い、クリック可能なdivを作らない。開発状況などの状態は、色だけでなく記号や文字でも示す。ホバーだけで成り立つ操作を作らない。
 - ヘッダーのメニューは、選択状態で文字の太さを変えない。太さが変わると幅が変わり、切り替えのたびに文字がずれる。
 - 演出はReact 19の`<ViewTransition>`で付けている。これは`BrowserRouter`がURL更新を`startTransition`で反映することを前提にしているので、`useTransitions={false}`を指定しない。`prefers-reduced-motion`ではCSSで動きを止める。
-- CSPは`script-src`・`style-src`・`img-src`とも`'self'`だけを許可している。外部CDN・Webフォント・外部画像は使わない。Reactの`style`プロップ（CSSOM経由）は使えるが、HTMLの`style`属性は使えない。
+- CSPは`script-src`・`style-src`・`img-src`とも`'self'`だけを許可している。外部CDN・外部画像・外部のWebフォント配信は使わない。フォントはFontsourceのnpmパッケージで同梱している（`src/main.tsx`）。CSSの`data:`画像もCSPで止まる。Reactの`style`プロップ（CSSOM経由）は使えるが、HTMLの`style`属性は使えない。
 - `public/`へファイルを足すときは、`scripts/verify-dist.mjs`の許可リストも更新する。更新しないとビルドの検査で落ちる。
 - OGPはサイト全体で共通にしている。`og:url`と`og:image`は本番の絶対URLなので、ドメインを変えるときは`index.html`も直す。
 

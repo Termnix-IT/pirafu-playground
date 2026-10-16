@@ -71,7 +71,7 @@ async function verifyDist() {
   let javascriptFiles = 0;
   for (const name of files) {
     const permitted = name === 'index.html' || name === '_headers' || siteAssets.includes(name)
-      || /^assets\/[^/]+\.(?:js|css)$/.test(name) || expectedMedia.has(name);
+      || /^assets\/[^/]+\.(?:js|css|woff2?)$/.test(name) || expectedMedia.has(name);
     assert(permitted, `許可していない配信ファイルです: ${name}`);
     const bytes = await fs.readFile(path.join(dist, name));
     if (expectedMedia.has(name)) {
