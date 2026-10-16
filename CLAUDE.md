@@ -29,8 +29,9 @@ npm run catalog:check  # 作品レコードと画像だけを検査
 ## 作品の掲載と更新
 
 - 実作品のレコードは`catalog/projects/`を直接編集しない。作品側の`pirafu.yaml`を原本として、`/pirafu-publisher` Skill（pirafu CLIの`register --update`）で登録・更新PRを作る。直接編集すると、作品側の原本とPortalの内容がずれる。
-- 構成サンプル（`sample-*`）は、同じ種類の実作品を掲載した時点で削除する。e2eテストはサンプルを使っているので、削除したら書き換える。
-- 作品の掲載・更新やサイトの目に見える変更をしたら、`src/data/changelog.ts`に1行足す。日付順と作品IDの実在はテストで検査される。
+- 構成サンプル（`sample-*`）は一覧に出さない。Webアプリとツールのサンプルはhidden、showcase表示を確かめる`sample-unlisted`は一覧外（unlisted）にしている。e2eテストは実作品DOPASWEEPERと`sample-unlisted`を使うので、これらの掲載状態を変えたらe2eも直す。
+- 作品の掲載・更新やサイトの目に見える変更をしたら、`src/data/changelog.ts`に1行足す。文面は「デザインをリニューアル」「DOPASWEEPERを追加」のような短い書き方にそろえる。日付順と作品IDの実在はテストで検査される。
+- サイトの文章は、個人のサイトらしい素直なです・ます調で書く。「制作拠点」「紹介します」「一新しました」のような硬い言い回しや、見る人に関係ない仕組みの説明は入れない。
 
 ## 画面の約束事
 

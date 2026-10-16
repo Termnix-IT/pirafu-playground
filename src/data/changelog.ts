@@ -8,10 +8,11 @@ export interface ChangelogEntry {
 }
 
 export const changelog: ChangelogEntry[] = [
-  { date: '2026-10-16', kind: 'site', text: 'ブラウザのタブやSNSで共有したときに表示されるアイコンと画像を追加しました。' },
-  { date: '2026-10-16', kind: 'site', text: 'メニューの切り替えボタンを作り直し、このページに更新履歴を追加しました。' },
-  { date: '2026-10-16', kind: 'site', text: 'ページの切り替えやカードに動きを加えました。' },
-  { date: '2026-10-16', kind: 'site', text: 'サイトのデザインを一新しました。' },
-  { date: '2026-10-16', kind: 'project', text: 'DOPASWEEPERを掲載しました。', projectId: 'dopasweeper' },
-  { date: '2026-10-15', kind: 'site', text: 'Pirafu2411 Playgroundを公開しました。' },
+  { date: '2026-10-16', kind: 'site', text: 'サイト内の文章を見直し' },
+  { date: '2026-10-16', kind: 'site', text: 'タブとSNS共有用のアイコン・画像を追加' },
+  { date: '2026-10-16', kind: 'site', text: 'メニューのボタンを改善、更新履歴を追加' },
+  { date: '2026-10-16', kind: 'site', text: 'ページ切り替えのアニメーションを追加' },
+  { date: '2026-10-16', kind: 'site', text: 'デザインをリニューアル' },
+  { date: '2026-10-16', kind: 'project', text: 'DOPASWEEPERを追加', projectId: 'dopasweeper' },
+  { date: '2026-10-15', kind: 'site', text: 'サイト公開' },
 ]

@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
 
+// Runs against the real built catalog: DOPASWEEPER is the listed work, and sample-unlisted covers the showcase page.
+
 const projectLink = (id: string) => `main a[href="/projects/${id}"]`
 const launchLinkName = /起動|アプリを開く|利用する|あそぶ|つかう/
 
@@ -7,18 +9,20 @@ test('一覧から詳細へ移動し、直接アクセスと再読込ができ�
   const failures: string[] = []
   page.on('pageerror', (error) => failures.push(error.message))
   await page.goto('/')
-  await expect(page.locator(projectLink('sample-tool'))).toBeVisible()
-  await expect(page.locator(projectLink('sample-notebook'))).toBeVisible()
-  await expect(page.locator(projectLink('sample-unlisted'))).toHaveCount(0)
-  await expect(page.locator(projectLink('sample-hidden'))).toHaveCount(0)
+  await expect(page.locator(projectLink('dopasweeper'))).toBeVisible()
+  for (const id of ['sample-tool', 'sample-notebook', 'sample-unlisted', 'sample-hidden']) {
+    await expect(page.locator(projectLink(id))).toHaveCount(0)
+  }
 
-  await page.locator(projectLink('sample-tool')).click()
-  await expect(page).toHaveURL(/\/projects\/sample-tool$/)
-  await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toContainText(/構成サンプル/)
-  await expect(page.getByRole('link', { name: launchLinkName })).toHaveCount(0)
+  await page.locator(projectLink('dopasweeper')).click()
+  await expect(page).toHaveURL(/\/projects\/dopasweeper$/)
+  await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toHaveText('DOPASWEEPER')
+  const launch = page.getByRole('main').getByRole('link', { name: launchLinkName })
+  await expect(launch).toHaveAttribute('target', '_blank')
+  await expect(launch).toHaveAttribute('rel', 'noopener noreferrer')
   await page.reload()
   await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toBeVisible()
-  await page.goto('/projects/sample-notebook')
+  await page.goto('/projects/sample-unlisted')
   await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toContainText(/構成サンプル/)
   await expect(page.getByRole('link', { name: launchLinkName })).toHaveCount(0)
   expect(failures).toEqual([])
@@ -35,7 +39,7 @@ test('検索条件をURLで復元し、戻る操作と条件解除を利用で�
   await page.reload()
   await expect(search).toHaveValue('存在しない作品検索語')
   await page.getByRole('link', { name: '条件を解除' }).click()
-  await expect(page.locator(projectLink('sample-tool'))).toBeVisible()
+  await expect(page.locator(projectLink('dopasweeper'))).toBeVisible()
   await page.goBack()
   await expect(search).toHaveValue('存在しない作品検索語')
   await expect(page.locator('main a[href^="/projects/"]')).toHaveCount(0)
@@ -43,16 +47,19 @@ test('検索条件をURLで復元し、戻る操作と条件解除を利用で�
 
 test('カテゴリーと開発状況を組み合わせて絞り込める', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('navigation', { name: 'カテゴリー' }).getByRole('link', { name: 'Webアプリ' }).click()
+  const categories = page.getByRole('navigation', { name: 'カテゴリー' })
+  await categories.getByRole('link', { name: 'Webアプリ' }).click()
   await expect(page).toHaveURL(/category=apps/)
-  await expect(page.locator(projectLink('sample-notebook'))).toBeVisible()
-  await expect(page.locator(projectLink('sample-tool'))).toHaveCount(0)
+  await expect(page.locator(projectLink('dopasweeper'))).toHaveCount(0)
+  await categories.getByRole('link', { name: 'ミニゲーム' }).click()
+  await expect(page).toHaveURL(/category=games/)
+  await expect(page.locator(projectLink('dopasweeper'))).toBeVisible()
   const status = page.getByRole('combobox', { name: '開発状況', exact: true })
   await status.selectOption('archived')
   await page.getByRole('button', { name: '絞り込む' }).click()
   await expect(page).toHaveURL(/status=archived/)
-  await expect(page).toHaveURL(/category=apps/)
-  await expect(page.locator(projectLink('sample-notebook'))).toHaveCount(0)
+  await expect(page).toHaveURL(/category=games/)
+  await expect(page.locator(projectLink('dopasweeper'))).toHaveCount(0)
   await page.reload()
   await expect(status).toHaveValue('archived')
 })
@@ -60,7 +67,7 @@ test('カテゴリーと開発状況を組み合わせて絞り込める', async
 test('非一覧作品は詳細のみ表示し、非掲載作品と未知URLは未検出にする', async ({ page }) => {
   await page.goto('/projects/sample-unlisted')
   await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toContainText(/構成サンプル/)
-  for (const path of ['/projects/sample-hidden', '/projects/does-not-exist', '/missing-page']) {
+  for (const path of ['/projects/sample-hidden', '/projects/sample-tool', '/projects/does-not-exist', '/missing-page']) {
     await page.goto(path)
     await expect(page.getByRole('main')).toContainText(/見つかりません|見つかりませんでした|存在しません/)
     await expect(page.locator('main a[href="/"]')).toBeVisible()
@@ -93,8 +100,8 @@ test('動きを減らす設定では入場アニメーションを止め、遷�
   const card = page.locator('.project-grid > li').first()
   await expect(card).toBeVisible()
   expect(await card.evaluate((element) => getComputedStyle(element).animationName)).toBe('none')
-  await page.locator(projectLink('sample-tool')).click()
-  await expect(page).toHaveURL(/\/projects\/sample-tool$/)
+  await page.locator(projectLink('dopasweeper')).click()
+  await expect(page).toHaveURL(/\/projects\/dopasweeper$/)
   await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toBeFocused()
 })
 
