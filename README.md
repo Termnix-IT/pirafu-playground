@@ -1,6 +1,6 @@
 # Pirafu2411 Playground
 
-Pirafu2411が個人制作したWebアプリ・ミニゲーム・ツールを紹介するサイトです。
+Pirafu2411が個人で作ったゲームやWebアプリ、ツールの置き場です。
 
 **サイト：https://pirafu2411.pages.dev**
 

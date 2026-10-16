@@ -11,5 +11,5 @@
   },
   "launch": { "type": "external", "url": "https://example.com/sample-notebook/" },
   "catalog": { "featured": false, "screenshots": [] },
-  "publication": { "visibility": "public", "launchEnabled": false }
+  "publication": { "visibility": "hidden", "launchEnabled": false }
 }

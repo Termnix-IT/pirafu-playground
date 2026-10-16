@@ -26,7 +26,7 @@ describe('Portal user flows', () => {
     await userEvent.type(screen.getByLabelText('タイトル・タグ'), 'ない作品')
     await userEvent.click(screen.getByRole('button', { name: '絞り込む' }))
     expect(screen.getByRole('status')).toHaveTextContent('0件')
-    expect(screen.getByText(/条件に一致する作品はありません/)).toBeVisible()
+    expect(screen.getByText(/該当する作品がありません/)).toBeVisible()
   })
   it('moves focus and changes the title after internal navigation', async () => {
     open()
@@ -43,11 +43,11 @@ describe('Portal user flows', () => {
   })
   it('never displays a launch link for disabled or showcase projects', () => {
     const view = open('/projects/demo', { ...base, launchEnabled: false })
-    expect(screen.getByText('現在は起動できません。')).toBeVisible()
+    expect(screen.getByText('ただいま準備中です。')).toBeVisible()
     expect(screen.queryByRole('link', { name: /あそぶ|つかう/ })).not.toBeInTheDocument()
     view.unmount()
     open('/projects/demo', { ...base, launch: { type: 'showcase' }, launchEnabled: false })
-    expect(screen.getByText('この作品は紹介のみです。')).toBeVisible()
+    expect(screen.getByText('この作品は紹介だけです。')).toBeVisible()
     expect(screen.queryByRole('link', { name: /あそぶ|つかう/ })).not.toBeInTheDocument()
   })
   it('omits unlisted projects from the list but permits their detail with a noindex hint', () => {

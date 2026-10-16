@@ -19,7 +19,7 @@ export function CatalogPage({ catalog }: { catalog: Catalog }) {
   return <>
     <div className="page-intro">
       <h1 tabIndex={-1}>作品一覧</h1>
-      <p>個人制作のWebアプリ・ミニゲーム・ツールを紹介します。</p>
+      <p>個人で作ったゲームやツールを置いています。</p>
     </div>
     <div className="catalog-controls">
       <nav aria-label="カテゴリー" className="category-nav">

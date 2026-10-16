@@ -11,5 +11,5 @@
   },
   "launch": { "type": "showcase" },
   "catalog": { "featured": false, "screenshots": [] },
-  "publication": { "visibility": "public", "launchEnabled": false }
+  "publication": { "visibility": "hidden", "launchEnabled": false }
 }
