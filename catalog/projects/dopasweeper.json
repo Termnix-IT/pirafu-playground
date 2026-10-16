@@ -3,7 +3,7 @@
   "project": {
     "id": "dopasweeper",
     "title": "DOPASWEEPER",
-    "description": "連鎖・コンボ・フィーバー演出を楽しむ、60秒タイムアタックのマインスイーパー。地雷を踏んでも時間ペナルティで続行できます。",
+    "description": "60秒でどこまで開けるかを競うマインスイーパー。地雷を踏んでもタイムが減るだけで続けられます。連鎖やコンボが決まると、画面がとにかく派手に盛り上がります。",
     "category": "games",
     "status": "in-development",
     "visibility": "public",
