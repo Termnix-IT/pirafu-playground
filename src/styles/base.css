@@ -84,7 +84,9 @@ p { word-break: auto-phrase; }
 .tile__header h2 { margin: 0; font-size: .9375rem; font-weight: 700; }
 .tile__header a { color: var(--text-muted); font-size: .8125rem; }
 .bento { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; }
-.button { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 3.25rem; padding: 0 1.4rem; border: 1px solid transparent; border-radius: var(--radius-md); font-weight: 700; text-decoration: none; cursor: pointer; transition: background-color .15s; }
+/* Button labels never wrap: the page-wide overflow-wrap would otherwise break them one character per line
+   when a row of buttons shares a narrow width. */
+.button { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 3.25rem; padding: 0 1.4rem; white-space: nowrap; border: 1px solid transparent; border-radius: var(--radius-md); font-weight: 700; text-decoration: none; cursor: pointer; transition: background-color .15s; }
 .button--glass { border-color: var(--line-strong); background: rgb(255 255 255 / .08); color: var(--text); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 .button--glass:hover { background: rgb(255 255 255 / .14); color: var(--text); }
 .button--light { background: var(--text); color: var(--bg); }
@@ -105,7 +107,7 @@ p { word-break: auto-phrase; }
 .tag { white-space: nowrap; }
 
 /* Play button: the amber key cap works like an arcade button and sinks when pressed. */
-.play-button { position: relative; isolation: isolate; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: .6rem; min-height: 3.25rem; padding: 0 1.6rem; border-radius: var(--radius-md); background: var(--play); color: var(--play-ink); font-size: 1.0625rem; font-weight: 900; letter-spacing: .04em; text-decoration: none; box-shadow: inset 0 -4px 0 var(--play-edge), 0 12px 32px -12px rgb(242 178 58 / .65); transition: transform .28s cubic-bezier(.34, 1.56, .64, 1), box-shadow .28s cubic-bezier(.34, 1.56, .64, 1), background-color .15s; }
+.play-button { position: relative; isolation: isolate; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: .6rem; white-space: nowrap; min-height: 3.25rem; padding: 0 1.6rem; border-radius: var(--radius-md); background: var(--play); color: var(--play-ink); font-size: 1.0625rem; font-weight: 900; letter-spacing: .04em; text-decoration: none; box-shadow: inset 0 -4px 0 var(--play-edge), 0 12px 32px -12px rgb(242 178 58 / .65); transition: transform .28s cubic-bezier(.34, 1.56, .64, 1), box-shadow .28s cubic-bezier(.34, 1.56, .64, 1), background-color .15s; }
 .play-button:hover { background: var(--play-hover); color: var(--play-ink); }
 /* Press sinks quickly; release springs back past the rest position through the overshooting easing above. */
 .play-button:active { transform: translateY(3px) scale(.97); box-shadow: inset 0 -1px 0 var(--play-edge); transition-duration: .06s; }
@@ -261,7 +263,8 @@ p { word-break: auto-phrase; }
   .featured-tile { min-height: 28rem; }
   .featured-tile__content { padding: 1.4rem; }
   .featured-tile__actions { width: 100%; }
-  .featured-tile__actions > * { flex: 1; }
+  .featured-tile__actions .play-button { flex: 1 1 auto; padding-inline: 1.1rem; }
+  .featured-tile__actions .button { padding-inline: 1rem; }
   .shortcut-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
   .shortcut-tile { gap: 1.25rem; padding: 1.1rem; }
   .works { padding-block: 3rem 4rem; }
