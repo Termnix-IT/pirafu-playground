@@ -24,7 +24,7 @@ npm run catalog:check  # 作品レコードと画像だけを検査
 - `src/data/changelog.ts`：「このサイトについて」に出す更新履歴。新しい順に手書きする。
 - `catalog/`：作品レコード（`projects/<id>.json`）と元画像（`media/<id>/`）。`contracts/v1/`のJSON Schemaで検証する。
 - `scripts/verify-dist.mjs`：配信物を許可リストで検査する。非掲載作品の文字列や停止中のURLが配信物に紛れ込んでいないかも確かめる。
-- `public/`：`_headers`（CSPなど）、ファビコン、ホーム画面用アイコン、OGP画像だけを置く固定ファイル。
+- `public/`：`_headers`（CSPなど）、ファビコン、ホーム画面用アイコン、OGP画像、テーマの初期化スクリプト（`theme.js`）だけを置く固定ファイル。
 
 ## 作品の掲載と更新
 
@@ -40,6 +40,7 @@ npm run catalog:check  # 作品レコードと画像だけを検査
 - ヘッダーのメニューは、選択状態で文字の太さを変えない。太さが変わると幅が変わり、切り替えのたびに文字がずれる。
 - 演出はReact 19の`<ViewTransition>`で付けている。これは`BrowserRouter`がURL更新を`startTransition`で反映することを前提にしているので、`useTransitions={false}`を指定しない。`prefers-reduced-motion`ではCSSで動きを止める。
 - CSPは`script-src`・`style-src`・`img-src`とも`'self'`だけを許可している。外部CDN・外部画像・外部のWebフォント配信は使わない。フォントはFontsourceのnpmパッケージで同梱している（`src/main.tsx`）。CSSの`data:`画像もCSPで止まる。Reactの`style`プロップ（CSSOM経由）は使えるが、HTMLの`style`属性は使えない。
+- 配色はライト・ダークの2テーマで、`<html data-theme>`と`base.css`冒頭のテーマ別CSS変数で切り替える。色は変数で書き、固定の色を直接書かない。どちらのテーマでも文字のコントラストを確かめる（白地のアンバー文字には`--accent-text`を使う）。テーマの初期化は`public/theme.js`（描画前に実行）と`src/app/theme.ts`が同じキー`pirafu-theme`を使う。作品画像を見せるタイルは`.dark-scope`で常に暗くする。
 - `public/`へファイルを足すときは、`scripts/verify-dist.mjs`の許可リストも更新する。更新しないとビルドの検査で落ちる。
 - OGPはサイト全体で共通にしている。`og:url`と`og:image`は本番の絶対URLなので、ドメインを変えるときは`index.html`も直す。
 

@@ -7,6 +7,7 @@ import { ProjectPage } from '../pages/ProjectPage'
 import { AboutPage } from '../pages/AboutPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
 import { LogoMark, SearchIcon } from '../components/Icons'
+import { ThemeToggle } from '../components/ThemeToggle'
 import { SEARCH_INPUT_ID, searchFocusState, wantsSearchFocus } from './searchFocus'
 
 function RouteAccessibility({ catalog }: { catalog: Catalog }) {
@@ -93,7 +94,10 @@ export function App({ catalog }: { catalog: Catalog }) {
       <div className="site-header__inner container">
         <Link to="/" className="site-logo"><LogoMark /><span>Pirafu2411 <span className="site-logo__sub">Playground</span></span></Link>
         <SiteNav />
-        <SearchButton />
+        <div className="header-actions">
+          <ThemeToggle />
+          <SearchButton />
+        </div>
       </div>
     </header>
     <main id="main" tabIndex={-1} className="site-main">

@@ -108,6 +108,8 @@ test('メニューは選択中の項目だけを示し、切り替えても文�
   await page.goto('/')
   const nav = page.getByRole('navigation', { name: 'メインナビゲーション' })
   const labels = nav.locator('.nav-label')
+  // Measure after the web fonts swap in; the font swap itself changes label widths once on first load.
+  await page.evaluate(() => document.fonts.ready)
   const before = await labels.evaluateAll((items) => items.map((item) => item.getBoundingClientRect().left))
   await nav.getByRole('link', { name: 'このサイトについて' }).click()
   await expect(page).toHaveURL(/\/about$/)
@@ -122,4 +124,16 @@ test('Ctrl+Kでどのページからでも作品検索へ移動できる', async
   await page.keyboard.press('Control+k')
   await expect(page).toHaveURL(/\/#works$/)
   await expect(page.getByLabel('タイトル・タグ', { exact: true })).toBeFocused()
+})
+
+test('テーマは未選択ならOSの設定に従い、切り替えた選択は再読み込み後も保たれる', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await page.goto('/')
+  const root = page.locator('html')
+  await expect(root).toHaveAttribute('data-theme', 'dark')
+  await page.getByRole('button', { name: 'ライトテーマに切り替え' }).click()
+  await expect(root).toHaveAttribute('data-theme', 'light')
+  await page.reload()
+  await expect(root).toHaveAttribute('data-theme', 'light')
+  await expect(page.getByRole('button', { name: 'ダークテーマに切り替え' })).toBeVisible()
 })
