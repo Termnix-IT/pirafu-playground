@@ -20,8 +20,8 @@ const launchable = (project: CatalogProject) => project.launch.type === 'externa
 // project also appears in the work grid and names must stay unique on a page.
 export function FeaturedTile({ project, categoryLabel }: { project: CatalogProject; categoryLabel: string }) {
   // The artwork sits in the upper area so its own lettering never collides with the title; a blurred copy
-  // tints the whole tile behind it.
-  return <article className="tile featured-tile" aria-labelledby="featured-title">
+  // tints the whole tile behind it. The tile stays dark in the light theme too, like a screen.
+  return <article className="tile featured-tile dark-scope" aria-labelledby="featured-title">
     {project.thumbnail && <img className="featured-tile__backdrop" src={project.thumbnail.src} alt="" />}
     <div className="featured-tile__media"><CardMedia key={project.thumbnail?.src} project={project} label={categoryLabel} /></div>
     <div className="featured-tile__content">

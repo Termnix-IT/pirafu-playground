@@ -71,6 +71,19 @@ describe('Portal user flows', () => {
     expect(screen.getByRole('heading', { name: 'ノート' })).toBeVisible()
     expect(document.querySelector('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow')
   })
+  it('switches between light and dark themes and remembers the choice', async () => {
+    try {
+      open()
+      expect(document.documentElement.dataset.theme).toBe('light')
+      await userEvent.click(screen.getByRole('button', { name: 'ダークテーマに切り替え' }))
+      expect(document.documentElement.dataset.theme).toBe('dark')
+      expect(window.localStorage.getItem('pirafu-theme')).toBe('dark')
+      expect(screen.getByRole('button', { name: 'ライトテーマに切り替え' })).toBeVisible()
+    } finally {
+      delete document.documentElement.dataset.theme
+      window.localStorage.removeItem('pirafu-theme')
+    }
+  })
   it('shows the update history on the About page', () => {
     open('/about')
     expect(screen.getByRole('heading', { level: 2, name: '更新履歴' })).toBeVisible()

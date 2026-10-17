@@ -61,8 +61,8 @@ async function verifyDist() {
     }
   }
 
-  // Fixed site icons and the share image are copied from public/ unchanged; nothing else may sit beside them.
-  const siteAssets = ['favicon.svg', 'apple-touch-icon.png', 'og-image.png'];
+  // Fixed site icons, the share image and the theme bootstrap script are copied from public/ unchanged; nothing else may sit beside them.
+  const siteAssets = ['favicon.svg', 'apple-touch-icon.png', 'og-image.png', 'theme.js'];
   for (const name of siteAssets) {
     assert(files.includes(name), `サイト用の固定ファイルがありません: ${name}`);
     assert((await fs.readFile(path.join(dist, name))).equals(await fs.readFile(path.join(root, 'public', name))), `サイト用の固定ファイルが元ファイルと一致しません: ${name}`);
