@@ -8,6 +8,7 @@ export interface ChangelogEntry {
 }
 
 export const changelog: ChangelogEntry[] = [
+  { date: '2026-10-17', kind: 'site', text: 'スマホで「あそぶ」ボタンの表示崩れを修正' },
   { date: '2026-10-16', kind: 'site', text: 'デザインをダークテーマにリニューアル' },
   { date: '2026-10-16', kind: 'site', text: 'サイト内の文章を見直し' },
   { date: '2026-10-16', kind: 'site', text: 'タブとSNS共有用のアイコン・画像を追加' },
