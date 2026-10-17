@@ -8,6 +8,7 @@ export interface ChangelogEntry {
 }
 
 export const changelog: ChangelogEntry[] = [
+  { date: '2026-10-17', kind: 'site', text: '表示の読み込みを軽量化' },
   { date: '2026-10-17', kind: 'site', text: 'ライトテーマを追加、切り替えボタンを設置' },
   { date: '2026-10-17', kind: 'site', text: 'スマホで「あそぶ」ボタンの表示崩れを修正' },
   { date: '2026-10-16', kind: 'site', text: 'デザインをダークテーマにリニューアル' },

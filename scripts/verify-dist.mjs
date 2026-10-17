@@ -71,7 +71,7 @@ async function verifyDist() {
   let javascriptFiles = 0;
   for (const name of files) {
     const permitted = name === 'index.html' || name === '_headers' || siteAssets.includes(name)
-      || /^assets\/[^/]+\.(?:js|css|woff2?)$/.test(name) || expectedMedia.has(name);
+      || /^assets\/[^/]+\.(?:js|css|woff2)$/.test(name) || expectedMedia.has(name);
     assert(permitted, `許可していない配信ファイルです: ${name}`);
     const bytes = await fs.readFile(path.join(dist, name));
     if (expectedMedia.has(name)) {
@@ -87,6 +87,7 @@ async function verifyDist() {
     for (const value of hiddenText) {
       assert(!text.includes(JSON.stringify(value)), `非掲載作品の本文が配信物に含まれています: ${name}`);
     }
+    if (name.endsWith('.css')) assert(!/url\(\s*["']?data:/i.test(text), `CSPで読み込めないdata: URLがCSSに含まれています: ${name}`);
     if (name.endsWith('.js')) javascriptFiles += 1;
   }
   assert(javascriptFiles > 0, 'アプリのJavaScript成果物がありません');
