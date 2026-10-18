@@ -1,0 +1,34 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      npm:
+        patterns: ["*"]
+    # Node is pinned in .node-version and package.json engines, and .npmrc sets
+    # engine-strict, so these majors wait until Node itself is raised.
+    ignore:
+      # Keep the types on the same major as the Node runtime (24). Raise them
+      # together with Node.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # jsdom 30 requires Node ^24.15.0, which fails npm ci on the pinned
+      # 24.13.1. Raise it together with Node.
+      - dependency-name: jsdom
+        update-types: ["version-update:semver-major"]
+
+  # Workflows pin actions to commit SHAs; Dependabot keeps the SHA and the
+  # trailing version comment in step.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns: ["*"]

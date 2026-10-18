@@ -24,11 +24,12 @@ npm run catalog:check  # 作品レコードと画像だけを検査
 - `src/data/changelog.ts`：「このサイトについて」に出す更新履歴。新しい順に手書きする。
 - `catalog/`：作品レコード（`projects/<id>.json`）と元画像（`media/<id>/`）。`contracts/v1/`のJSON Schemaで検証する。
 - `scripts/verify-dist.mjs`：配信物を許可リストで検査する。非掲載作品の文字列や停止中のURLが配信物に紛れ込んでいないかも確かめる。
-- `public/`：`_headers`（CSPなど）、ファビコン、ホーム画面用アイコン、OGP画像だけを置く固定ファイル。
+- `public/`：`_headers`（CSPなど）、ファビコン、ホーム画面用アイコン、OGP画像、テーマの初期化スクリプト（`theme.js`）だけを置く固定ファイル。
 
 ## 作品の掲載と更新
 
 - 実作品のレコードは`catalog/projects/`を直接編集しない。作品側の`pirafu.yaml`を原本として、`/pirafu-publisher` Skill（pirafu CLIの`register --update`）で登録・更新PRを作る。直接編集すると、作品側の原本とPortalの内容がずれる。
+- CLIの登録ブランチ（`pirafu/register/<作品ID>`）は、CLI以外の方法で更新しない。`gh pr update-branch`などでCLI以外のコミットが入ると、CLIは次の登録更新を終了コード7で止める。登録PRがBEHINDにならないよう、登録PRはほかのPRより先にmergeされる順番にする。止まった場合は、そのブランチに未mergeの登録が残っていないことを確かめ、利用者の承認を得てリモートブランチを削除してから、CLIで計画し直す。
 - 構成サンプル（`sample-*`）は一覧に出さない。Webアプリとツールのサンプルはhidden、showcase表示を確かめる`sample-unlisted`は一覧外（unlisted）にしている。e2eテストは実作品DOPASWEEPERと`sample-unlisted`を使うので、これらの掲載状態を変えたらe2eも直す。
 - 作品の掲載・更新やサイトの目に見える変更をしたら、`src/data/changelog.ts`に1行足す。文面は「デザインをリニューアル」「DOPASWEEPERを追加」のような短い書き方にそろえる。日付順と作品IDの実在はテストで検査される。
 - サイトの文章は、個人のサイトらしい素直なです・ます調で書く。「制作拠点」「紹介します」「一新しました」のような硬い言い回しや、見る人に関係ない仕組みの説明は入れない。
@@ -38,7 +39,8 @@ npm run catalog:check  # 作品レコードと画像だけを検査
 - アクセシビリティ：本物のリンクとボタンを使い、クリック可能なdivを作らない。開発状況などの状態は、色だけでなく記号や文字でも示す。ホバーだけで成り立つ操作を作らない。
 - ヘッダーのメニューは、選択状態で文字の太さを変えない。太さが変わると幅が変わり、切り替えのたびに文字がずれる。
 - 演出はReact 19の`<ViewTransition>`で付けている。これは`BrowserRouter`がURL更新を`startTransition`で反映することを前提にしているので、`useTransitions={false}`を指定しない。`prefers-reduced-motion`ではCSSで動きを止める。
-- CSPは`script-src`・`style-src`・`img-src`とも`'self'`だけを許可している。外部CDN・Webフォント・外部画像は使わない。Reactの`style`プロップ（CSSOM経由）は使えるが、HTMLの`style`属性は使えない。
+- CSPは`script-src`・`style-src`・`img-src`とも`'self'`だけを許可している。外部CDN・外部画像・外部のWebフォント配信は使わない。フォントはFontsourceのnpmパッケージで同梱している（`src/main.tsx`）。日本語フォントの`@font-face`は大きいので`src/styles/fonts-ja.ts`に分けて動的importし、初回描画を止めないようにしている。フォントは`.woff2`だけを配信し、小さな素材も`data:`URLに埋め込まない（`vite.config.ts`）。CSSの`data:`画像もCSPで止まる。Reactの`style`プロップ（CSSOM経由）は使えるが、HTMLの`style`属性は使えない。
+- 配色はライト・ダークの2テーマで、`<html data-theme>`と`base.css`冒頭のテーマ別CSS変数で切り替える。色は変数で書き、固定の色を直接書かない。どちらのテーマでも文字のコントラストを確かめる（白地のアンバー文字には`--accent-text`を使う）。テーマの初期化は`public/theme.js`（描画前に実行）と`src/app/theme.ts`が同じキー`pirafu-theme`を使う。作品画像を見せるタイルは`.dark-scope`で常に暗くする。
 - `public/`へファイルを足すときは、`scripts/verify-dist.mjs`の許可リストも更新する。更新しないとビルドの検査で落ちる。
 - OGPはサイト全体で共通にしている。`og:url`と`og:image`は本番の絶対URLなので、ドメインを変えるときは`index.html`も直す。
 

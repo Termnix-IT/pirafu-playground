@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it } from 'vitest'
@@ -24,18 +24,31 @@ describe('Portal user flows', () => {
     expect(screen.getByRole('status')).toHaveTextContent('1件')
     await userEvent.clear(screen.getByLabelText('タイトル・タグ'))
     await userEvent.type(screen.getByLabelText('タイトル・タグ'), 'ない作品')
-    await userEvent.click(screen.getByRole('button', { name: '絞り込む' }))
     expect(screen.getByRole('status')).toHaveTextContent('0件')
     expect(screen.getByText(/該当する作品がありません/)).toBeVisible()
   })
   it('moves focus and changes the title after internal navigation', async () => {
     open()
-    await userEvent.click(screen.getByRole('link', { name: 'ノート' }))
+    const works = screen.getByRole('region', { name: 'すべての作品' })
+    await userEvent.click(within(works).getByRole('link', { name: 'ノート' }))
     expect(screen.getByRole('heading', { level: 1, name: 'ノート' })).toHaveFocus()
     expect(document.title).toBe('ノート | Pirafu2411 Playground')
     const link = screen.getByRole('link', { name: 'つかう（別タブ）' })
     expect(link).toHaveAttribute('href', 'https://example.com/app/')
     expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+  })
+  it('filters while typing and keeps spaces between words', async () => {
+    open('/', { ...base, tags: ['note', 'browser'] })
+    await userEvent.type(screen.getByLabelText('タイトル・タグ'), 'note browser')
+    expect(screen.getByLabelText('タイトル・タグ')).toHaveValue('note browser')
+    expect(screen.getByRole('status')).toHaveTextContent('1件')
+  })
+  it('shows the featured project as the pickup tile on the home page', () => {
+    open()
+    const pickup = screen.getByText('ピックアップ').closest('article')
+    expect(pickup).not.toBeNull()
+    expect(within(pickup as HTMLElement).getByRole('heading', { level: 2, name: 'ノート' })).toBeVisible()
+    expect(within(pickup as HTMLElement).getByRole('link', { name: 'つかう（別タブ）' })).toHaveAttribute('href', 'https://example.com/app/')
   })
   it('labels the launch link for games as playing', () => {
     open('/projects/demo', { ...base, category: 'games' })
@@ -57,6 +70,19 @@ describe('Portal user flows', () => {
     open('/projects/demo', { ...base, visibility: 'unlisted' })
     expect(screen.getByRole('heading', { name: 'ノート' })).toBeVisible()
     expect(document.querySelector('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow')
+  })
+  it('switches between light and dark themes and remembers the choice', async () => {
+    try {
+      open()
+      expect(document.documentElement.dataset.theme).toBe('light')
+      await userEvent.click(screen.getByRole('button', { name: 'ダークテーマに切り替え' }))
+      expect(document.documentElement.dataset.theme).toBe('dark')
+      expect(window.localStorage.getItem('pirafu-theme')).toBe('dark')
+      expect(screen.getByRole('button', { name: 'ライトテーマに切り替え' })).toBeVisible()
+    } finally {
+      delete document.documentElement.dataset.theme
+      window.localStorage.removeItem('pirafu-theme')
+    }
   })
   it('shows the update history on the About page', () => {
     open('/about')

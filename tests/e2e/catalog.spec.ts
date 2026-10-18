@@ -2,7 +2,8 @@ import { expect, test } from '@playwright/test'
 
 // Runs against the real built catalog: DOPASWEEPER is the listed work, and sample-unlisted covers the showcase page.
 
-const projectLink = (id: string) => `main a[href="/projects/${id}"]`
+// Links inside the work grid; the pickup tile above it links to the same projects.
+const projectLink = (id: string) => `#works a[href="/projects/${id}"]`
 const launchLinkName = /起動|アプリを開く|利用する|あそぶ|つかう/
 
 test('一覧から詳細へ移動し、直接アクセスと再読込ができる', async ({ page }) => {
@@ -11,7 +12,7 @@ test('一覧から詳細へ移動し、直接アクセスと再読込ができ�
   await page.goto('/')
   await expect(page.locator(projectLink('dopasweeper'))).toBeVisible()
   for (const id of ['sample-tool', 'sample-notebook', 'sample-unlisted', 'sample-hidden']) {
-    await expect(page.locator(projectLink(id))).toHaveCount(0)
+    await expect(page.locator(`main a[href="/projects/${id}"]`)).toHaveCount(0)
   }
 
   await page.locator(projectLink('dopasweeper')).click()
@@ -32,9 +33,8 @@ test('検索条件をURLで復元し、戻る操作と条件解除を利用で�
   await page.goto('/')
   const search = page.getByLabel('タイトル・タグ', { exact: true })
   await search.fill('存在しない作品検索語')
-  await page.getByRole('button', { name: '絞り込む' }).click()
   await expect(page).toHaveURL(/q=/)
-  await expect(page.locator('main a[href^="/projects/"]')).toHaveCount(0)
+  await expect(page.locator('#works a[href^="/projects/"]')).toHaveCount(0)
   await expect(page.getByRole('main')).toContainText(/0\s*件|見つかりません|ありません/)
   await page.reload()
   await expect(search).toHaveValue('存在しない作品検索語')
@@ -42,12 +42,12 @@ test('検索条件をURLで復元し、戻る操作と条件解除を利用で�
   await expect(page.locator(projectLink('dopasweeper'))).toBeVisible()
   await page.goBack()
   await expect(search).toHaveValue('存在しない作品検索語')
-  await expect(page.locator('main a[href^="/projects/"]')).toHaveCount(0)
+  await expect(page.locator('#works a[href^="/projects/"]')).toHaveCount(0)
 })
 
 test('カテゴリーと開発状況を組み合わせて絞り込める', async ({ page }) => {
   await page.goto('/')
-  const categories = page.getByRole('navigation', { name: 'カテゴリー' })
+  const categories = page.getByRole('navigation', { name: 'カテゴリー', exact: true })
   await categories.getByRole('link', { name: 'Webアプリ' }).click()
   await expect(page).toHaveURL(/category=apps/)
   await expect(page.locator(projectLink('dopasweeper'))).toHaveCount(0)
@@ -56,7 +56,6 @@ test('カテゴリーと開発状況を組み合わせて絞り込める', async
   await expect(page.locator(projectLink('dopasweeper'))).toBeVisible()
   const status = page.getByRole('combobox', { name: '開発状況', exact: true })
   await status.selectOption('archived')
-  await page.getByRole('button', { name: '絞り込む' }).click()
   await expect(page).toHaveURL(/status=archived/)
   await expect(page).toHaveURL(/category=games/)
   await expect(page.locator(projectLink('dopasweeper'))).toHaveCount(0)
@@ -90,14 +89,14 @@ test('狭い画面でキーボードから検索でき、横にはみ出さな�
   await search.fill('存在しない作品検索語')
   await search.press('Enter')
   await expect(page).toHaveURL(/q=/)
-  await expect(page.locator('main a[href^="/projects/"]')).toHaveCount(0)
+  await expect(page.locator('#works a[href^="/projects/"]')).toHaveCount(0)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 })
 
 test('動きを減らす設定では入場アニメーションを止め、遷移はそのまま使える', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
-  const card = page.locator('.project-grid > li').first()
+  const card = page.locator('.work-grid > li').first()
   await expect(card).toBeVisible()
   expect(await card.evaluate((element) => getComputedStyle(element).animationName)).toBe('none')
   await page.locator(projectLink('dopasweeper')).click()
@@ -109,6 +108,8 @@ test('メニューは選択中の項目だけを示し、切り替えても文�
   await page.goto('/')
   const nav = page.getByRole('navigation', { name: 'メインナビゲーション' })
   const labels = nav.locator('.nav-label')
+  // Measure after the web fonts swap in; the font swap itself changes label widths once on first load.
+  await page.evaluate(() => document.fonts.ready)
   const before = await labels.evaluateAll((items) => items.map((item) => item.getBoundingClientRect().left))
   await nav.getByRole('link', { name: 'このサイトについて' }).click()
   await expect(page).toHaveURL(/\/about$/)
@@ -116,4 +117,23 @@ test('メニューは選択中の項目だけを示し、切り替えても文�
   await expect(nav.locator('.nav-indicator')).toHaveCount(1)
   expect(await labels.evaluateAll((items) => items.map((item) => item.getBoundingClientRect().left))).toEqual(before)
   await expect(page.getByRole('heading', { name: '更新履歴' })).toBeVisible()
+})
+
+test('Ctrl+Kでどのページからでも作品検索へ移動できる', async ({ page }) => {
+  await page.goto('/projects/dopasweeper')
+  await page.keyboard.press('Control+k')
+  await expect(page).toHaveURL(/\/#works$/)
+  await expect(page.getByLabel('タイトル・タグ', { exact: true })).toBeFocused()
+})
+
+test('テーマは未選択ならOSの設定に従い、切り替えた選択は再読み込み後も保たれる', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await page.goto('/')
+  const root = page.locator('html')
+  await expect(root).toHaveAttribute('data-theme', 'dark')
+  await page.getByRole('button', { name: 'ライトテーマに切り替え' }).click()
+  await expect(root).toHaveAttribute('data-theme', 'light')
+  await page.reload()
+  await expect(root).toHaveAttribute('data-theme', 'light')
+  await expect(page.getByRole('button', { name: 'ダークテーマに切り替え' })).toBeVisible()
 })

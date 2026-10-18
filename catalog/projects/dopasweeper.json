@@ -5,7 +5,7 @@
     "title": "DOPASWEEPER",
     "description": "60秒でどこまで開けるかを競うマインスイーパー。地雷を踏んでもタイムが減るだけで続けられます。連鎖やコンボが決まると、画面がとにかく派手に盛り上がります。",
     "category": "games",
-    "status": "in-development",
+    "status": "stable",
     "visibility": "public",
     "tags": [
       "マインスイーパー",
