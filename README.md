@@ -36,7 +36,7 @@ Pirafu2411が個人で作ったゲームやWebアプリ、ツールの置き場�
 
 ## 手元で動かす
 
-Node.js 24.13.1（`.node-version`）と npm 11 が必要です。
+Node.js 24.22.1（`.node-version`）と npm 11 が必要です。
 
 ```bash
 npm ci
