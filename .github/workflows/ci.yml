@@ -25,7 +25,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version-file: .node-version
+          # Track the newest 24.x so Node security releases reach CI without
+          # a manual bump. Local and Pages builds stay on .node-version.
+          node-version: '24'
+          check-latest: true
           cache: npm
       - name: Install locked dependencies
         run: npm ci
