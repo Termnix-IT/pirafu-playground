@@ -42,45 +42,44 @@ export function CatalogPage({ catalog }: { catalog: Catalog }) {
 
   return <>
     <div className="container home-top">
-      <div className="bento">
-        <section className="tile intro-tile" aria-labelledby="home-title">
+      {/* One dark stage like an arcade screen: the intro on the left, the pickup game on a tilted screen on the
+          right, and a ghost "PLAY" behind both. The featured thumbnail, blurred, tints the whole stage. */}
+      <section className="home-hero dark-scope" aria-labelledby="home-title">
+        {featured?.thumbnail && <img className="home-hero__backdrop" src={featured.thumbnail.src} alt="" />}
+        <span className="home-hero__ghost" aria-hidden="true">PLAY</span>
+        <div className="home-hero__intro">
           <p className="eyebrow eyebrow--accent">PIRAFU2411 PLAYGROUND</p>
-          <h1 id="home-title" tabIndex={-1}>作ったゲームと<br />ツールの置き場</h1>
-          <p className="intro-tile__lead">個人で作ったものを置いています。ブラウザでそのまま遊べるものもあります。</p>
-        </section>
-        {featured && <FeaturedTile project={featured} categoryLabel={labelOf(featured.category)} />}
-        <section className="tile updates-tile" aria-labelledby="updates-title">
-          <div className="tile__header">
-            <h2 id="updates-title">更新履歴</h2>
-            <Link to="/about#changelog">すべて見る</Link>
-          </div>
-          <ol>
-            {changelog.slice(0, 3).map((entry) => <li key={`${entry.date}-${entry.text}`}>
-              <time dateTime={entry.date}>{entry.date.slice(5).replace('-', '.')}</time>
-              <span>{entry.text}</span>
-            </li>)}
-          </ol>
-        </section>
-        <nav className="shortcut-row" aria-label="カテゴリー別に見る">
-          {catalog.categories.map((category) => {
-            const count = listed.filter((project) => project.category === category.id).length
-            // "Other" appears only once it has something in it; the main three always show where they stand.
-            if (category.id === 'other' && count === 0) return null
-            return <Link key={category.id} to={{ search: toSearch({ ...noFilters, category: category.id }), hash: '#works' }}
-              className={`tile shortcut-tile tone-${category.id}`} aria-label={`${category.label}（${count ? `${count}作品` : '準備中'}）`}>
-              <CategoryIcon category={category.id} size={26} />
-              <span className="shortcut-tile__row">
-                <span className="shortcut-tile__label">{category.label}</span>
-                {count ? <span className="shortcut-tile__count">{count}</span> : <span className="shortcut-tile__note">準備中</span>}
-              </span>
+          <h1 id="home-title" tabIndex={-1}><span>作ったゲームと</span><br /><span>ツールの置き場</span></h1>
+          <p className="home-hero__lead">個人で作ったものを置いています。ブラウザでそのまま遊べるものもあります。</p>
+          <nav className="category-strip" aria-label="カテゴリー別に見る">
+            {catalog.categories.map((category) => {
+              const count = listed.filter((project) => project.category === category.id).length
+              // "Other" appears only once it has something in it; the main three always show where they stand.
+              if (category.id === 'other' && count === 0) return null
+              return <Link key={category.id} to={{ search: toSearch({ ...noFilters, category: category.id }), hash: '#works' }}
+                className={`category-link tone-${category.id}`} aria-label={`${category.label}（${count ? `${count}作品` : '準備中'}）`}>
+                <CategoryIcon category={category.id} size={18} />
+                <span>{category.label}</span>
+                {count ? <span className="category-link__count">{count}</span> : <span className="category-link__note">準備中</span>}
+              </Link>
+            })}
+            <Link to={{ search: location.search, hash: '#works' }} state={searchFocusState} className="category-link category-link--search">
+              <SearchIcon size={18} /><span>作品を探す</span>
             </Link>
-          })}
-          <Link to={{ search: location.search, hash: '#works' }} state={searchFocusState} className="tile shortcut-tile shortcut-tile--search">
-            <SearchIcon size={26} />
-            <span className="shortcut-tile__row"><span className="shortcut-tile__label">作品を探す</span></span>
-          </Link>
-        </nav>
-      </div>
+          </nav>
+        </div>
+        {featured && <FeaturedTile project={featured} categoryLabel={labelOf(featured.category)} />}
+      </section>
+      <section className="updates-strip" aria-labelledby="updates-title">
+        <h2 id="updates-title">更新履歴</h2>
+        <ol>
+          {changelog.slice(0, 3).map((entry) => <li key={`${entry.date}-${entry.text}`}>
+            <time dateTime={entry.date}>{entry.date.slice(5).replace('-', '.')}</time>
+            <span>{entry.text}</span>
+          </li>)}
+        </ol>
+        <Link to="/about#changelog">すべて見る</Link>
+      </section>
     </div>
 
     <section id="works" ref={worksRef} className="container works" aria-labelledby="works-title">
