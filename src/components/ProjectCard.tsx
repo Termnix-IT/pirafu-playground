@@ -16,13 +16,11 @@ function CardMedia({ project, label }: { project: CatalogProject; label?: string
 
 const launchable = (project: CatalogProject) => project.launch.type === 'external' && project.launchEnabled && Boolean(project.launch.url)
 
-// The pickup tile at the top of the home page. It carries no view-transition names, because the same
+// The pickup game inside the home stage. It carries no view-transition names, because the same
 // project also appears in the work grid and names must stay unique on a page.
 export function FeaturedTile({ project, categoryLabel }: { project: CatalogProject; categoryLabel: string }) {
-  // The artwork sits in the upper area so its own lettering never collides with the title; a blurred copy
-  // tints the whole tile behind it. The tile stays dark in the light theme too, like a screen.
-  return <article className="tile featured-tile dark-scope" aria-labelledby="featured-title">
-    {project.thumbnail && <img className="featured-tile__backdrop" src={project.thumbnail.src} alt="" />}
+  // The artwork sits on its own screen above the text, so its lettering never collides with the title.
+  return <article className="featured-tile" aria-labelledby="featured-title">
     <div className="featured-tile__media"><CardMedia key={project.thumbnail?.src} project={project} label={categoryLabel} /></div>
     <div className="featured-tile__content">
       <div className="featured-tile__text">
