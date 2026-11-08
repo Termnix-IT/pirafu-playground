@@ -11,7 +11,7 @@ export function MediaGallery({ thumbnail, screenshots }: { thumbnail?: ProjectMe
   const images = thumbnail ? [thumbnail, ...screenshots] : screenshots
   if (!images.length) return null
   return <section aria-labelledby="media-title" className="tile media-tile">
-    <h2 id="media-title" className="tile__title">紹介画像</h2>
+    <h2 id="media-title" className="tile__title"><span className="marker">紹介画像</span></h2>
     <div className="media-gallery">
       {images.map((media) => <figure key={media.src} className="media-figure">
         <MediaImage media={media} />

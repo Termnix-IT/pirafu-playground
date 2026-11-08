@@ -1,23 +1,36 @@
-// Visitor-facing update history shown on the About page. Add new entries at the top.
-// kind "project" entries name a catalog project; the page links to it while it is publicly listed.
-export interface ChangelogEntry {
-  date: string
-  kind: 'site' | 'project'
-  text: string
-  projectId?: string
-}
+// Visitor-facing update history shown on the home and About pages. Add new entries at the top.
+// Entries hold only what changed, and changelogText() writes every line the same way:
+// site changes read "サイトの{area}改善", works read "{title}を追加/更新", and the opening reads "サイトを公開".
+// Record one site entry per area and date; several changes to the same area on one day share it.
+import type { CatalogProject } from '../features/catalog/types'
+
+export type SiteArea = 'ページ' | '文章' | '画像' | 'システム'
+
+export type ChangelogEntry =
+  | { date: string; kind: 'site'; area: SiteArea }
+  | { date: string; kind: 'project'; projectId: string; action: '追加' | '更新' }
+  | { date: string; kind: 'launch' }
 
 export const changelog: ChangelogEntry[] = [
-  { date: '2026-10-27', kind: 'site', text: 'トップページのデザインを改善' },
-  { date: '2026-10-17', kind: 'site', text: '表示の読み込みを軽量化' },
-  { date: '2026-10-17', kind: 'site', text: 'ライトテーマを追加、切り替えボタンを設置' },
-  { date: '2026-10-17', kind: 'site', text: 'スマホで「あそぶ」ボタンの表示崩れを修正' },
-  { date: '2026-10-16', kind: 'site', text: 'デザインをダークテーマにリニューアル' },
-  { date: '2026-10-16', kind: 'site', text: 'サイト内の文章を見直し' },
-  { date: '2026-10-16', kind: 'site', text: 'タブとSNS共有用のアイコン・画像を追加' },
-  { date: '2026-10-16', kind: 'site', text: 'メニューのボタンを改善、更新履歴を追加' },
-  { date: '2026-10-16', kind: 'site', text: 'ページ切り替えのアニメーションを追加' },
-  { date: '2026-10-16', kind: 'site', text: 'デザインをリニューアル' },
-  { date: '2026-10-16', kind: 'project', text: 'DOPASWEEPERを追加', projectId: 'dopasweeper' },
-  { date: '2026-10-15', kind: 'site', text: 'サイト公開' },
+  { date: '2026-11-08', kind: 'site', area: 'ページ' },
+  { date: '2026-11-08', kind: 'site', area: '文章' },
+  { date: '2026-10-27', kind: 'site', area: 'ページ' },
+  { date: '2026-10-26', kind: 'project', projectId: 'poseref', action: '追加' },
+  { date: '2026-10-18', kind: 'project', projectId: 'blue-archive-db', action: '追加' },
+  { date: '2026-10-18', kind: 'project', projectId: 'dopasweeper', action: '更新' },
+  { date: '2026-10-17', kind: 'site', area: 'ページ' },
+  { date: '2026-10-17', kind: 'site', area: 'システム' },
+  { date: '2026-10-16', kind: 'site', area: 'ページ' },
+  { date: '2026-10-16', kind: 'site', area: '文章' },
+  { date: '2026-10-16', kind: 'site', area: '画像' },
+  { date: '2026-10-16', kind: 'project', projectId: 'dopasweeper', action: '追加' },
+  { date: '2026-10-15', kind: 'launch' },
 ]
+
+export function changelogText(entry: ChangelogEntry, projects: CatalogProject[]): string {
+  switch (entry.kind) {
+    case 'site': return `サイトの${entry.area}改善`
+    case 'launch': return 'サイトを公開'
+    case 'project': return `${projects.find(({ id }) => id === entry.projectId)?.title ?? entry.projectId}を${entry.action}`
+  }
+}

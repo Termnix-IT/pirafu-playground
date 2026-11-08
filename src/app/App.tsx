@@ -92,7 +92,7 @@ export function App({ catalog }: { catalog: Catalog }) {
     <a className="skip-link" href="#main">本文へ移動</a>
     <header className="site-header">
       <div className="site-header__inner container">
-        <Link to="/" className="site-logo"><LogoMark /><span>Pirafu2411 <span className="site-logo__sub">Playground</span></span></Link>
+        <Link to="/" className="site-logo"><LogoMark /><span>Pirafu2411 Playground</span></Link>
         <SiteNav />
         <div className="header-actions">
           <ThemeToggle />
@@ -110,7 +110,7 @@ export function App({ catalog }: { catalog: Catalog }) {
     </main>
     <footer className="site-footer">
       <div className="site-footer__inner container">
-        <p>Pirafu2411 Playground</p>
+        <p className="site-footer__name">Pirafu2411 Playground</p>
         <Link to="/about">このサイトについて</Link>
       </div>
     </footer>

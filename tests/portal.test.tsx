@@ -45,10 +45,47 @@ describe('Portal user flows', () => {
   })
   it('shows the featured project as the pickup tile on the home page', () => {
     open()
-    const pickup = screen.getByText('ピックアップ').closest('article')
+    const pickup = screen.getByText('おすすめ').closest('article')
     expect(pickup).not.toBeNull()
     expect(within(pickup as HTMLElement).getByRole('heading', { level: 2, name: 'ノート' })).toBeVisible()
     expect(within(pickup as HTMLElement).getByRole('link', { name: 'つかう（別タブ）' })).toHaveAttribute('href', 'https://example.com/app/')
+  })
+  it('unlocks another work when the PLAYGROUND tiles are put in order', async () => {
+    const catalog: Catalog = {
+      schemaVersion: 1, categories: [{ id: 'apps', label: 'Webアプリ' }, { id: 'games', label: 'ミニゲーム' }],
+      projects: [base, { ...base, id: 'game', title: 'ゲーム', category: 'games', featured: false }],
+    }
+    render(<MemoryRouter><App catalog={catalog} /></MemoryRouter>)
+    const puzzle = screen.getByRole('group', { name: 'PLAYGROUNDのタイルパズル' })
+    // The first scramble swaps A (3rd) and U (8th); swapping them back solves the word.
+    await userEvent.click(within(puzzle).getByRole('button', { name: 'U（3番目）' }))
+    expect(within(puzzle).getByRole('button', { name: 'U（3番目）' })).toHaveAttribute('aria-pressed', 'true')
+    await userEvent.click(within(puzzle).getByRole('button', { name: 'A（8番目）' }))
+    expect(within(puzzle).getByRole('button', { name: 'A（3番目）' })).toHaveAttribute('aria-pressed', 'false')
+    const card = screen.getByText('パズルで選んだ作品').closest('article') as HTMLElement
+    expect(within(card).getByRole('heading', { level: 2, name: 'ゲーム' })).toBeVisible()
+    expect(screen.getByText(/PLAYGROUNDの順に並びました。ゲームを表示しました。/)).toBeInTheDocument()
+  })
+  it('moves a chosen tile with the arrow keys and moves focus without one', async () => {
+    open('/missing-page')
+    const puzzle = screen.getByRole('group', { name: 'HOMEのタイルパズル' })
+    const first = within(puzzle).getByRole('button', { name: 'M（1番目）' })
+    first.focus()
+    await userEvent.keyboard('{ArrowRight}')
+    expect(within(puzzle).getByRole('button', { name: 'E（2番目）' })).toHaveFocus()
+    await userEvent.keyboard('{Enter}{ArrowLeft}')
+    expect(within(puzzle).getByRole('button', { name: 'E（1番目）' })).toHaveFocus()
+    expect(within(puzzle).getByRole('button', { name: 'M（2番目）' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '作品一覧へ' })).toHaveAttribute('href', '/')
+  })
+  it('keeps the single tab stop on the clicked tile after a click swap', async () => {
+    open('/missing-page')
+    const puzzle = screen.getByRole('group', { name: 'HOMEのタイルパズル' })
+    await userEvent.click(within(puzzle).getByRole('button', { name: 'M（1番目）' }))
+    await userEvent.click(within(puzzle).getByRole('button', { name: 'E（2番目）' }))
+    const moved = within(puzzle).getByRole('button', { name: 'E（1番目）' })
+    expect(moved).toHaveFocus()
+    expect(within(puzzle).getAllByRole('button').filter((button) => button.tabIndex === 0)).toEqual([moved])
   })
   it('labels the launch link for games as playing', () => {
     open('/projects/demo', { ...base, category: 'games' })
