@@ -27,12 +27,18 @@ export function selectProjects(projects: CatalogProject[], filters: CatalogFilte
     || a.title.localeCompare(b.title, 'ja') || a.id.localeCompare(b.id, 'en'))
 }
 
+// Works shown under a detail page: the same category first, then other listed works to fill the row.
 export function selectRelatedProjects(projects: CatalogProject[], project: CatalogProject, limit = 3): CatalogProject[] {
-  return selectProjects(projects, { query: '', category: project.category, status: '' })
-    .filter(({ id }) => id !== project.id)
-    .slice(0, limit)
+  const others = selectProjects(projects, { query: '', category: '', status: '' }).filter(({ id }) => id !== project.id)
+  const sameCategory = others.filter(({ category }) => category === project.category)
+  return [...sameCategory, ...others.filter(({ category }) => category !== project.category)].slice(0, limit)
 }
 
 export function findProject(projects: CatalogProject[], id: string | undefined): CatalogProject | undefined {
   return projects.find((project) => project.id === id)
+}
+
+// Whether the work can be opened from a launch button: an external app with a URL that is switched on.
+export function isLaunchable(project: CatalogProject): boolean {
+  return project.launch.type === 'external' && project.launchEnabled && Boolean(project.launch.url)
 }

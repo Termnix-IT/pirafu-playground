@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router'
-import { SEARCH_INPUT_ID, searchFocusState, wantsSearchFocus } from '../app/searchFocus'
-import { CategoryIcon, SearchIcon } from '../components/Icons'
-import { FeaturedTile } from '../components/ProjectCard'
+import { SEARCH_INPUT_ID, wantsSearchFocus } from '../app/searchFocus'
+import { SearchIcon } from '../components/Icons'
+import { UnlockCard } from '../components/ProjectCard'
 import { ProjectList } from '../components/ProjectList'
+import { TilePuzzle } from '../components/TilePuzzle'
+import type { TileTone } from '../components/TilePuzzle'
 import { changelog } from '../data/changelog'
 import { readFilters, selectProjects, writeFilters } from '../features/catalog/selectors'
 import { statusLabels } from '../features/catalog/types'
 import type { Catalog, CatalogFilters } from '../features/catalog/types'
+import { pickNext, solvedOrder, swapTiles } from '../features/playground/tilePuzzle'
 
 const noFilters: CatalogFilters = { query: '', category: '', status: '' }
 const toSearch = (filters: CatalogFilters) => {
@@ -15,16 +18,29 @@ const toSearch = (filters: CatalogFilters) => {
   return search ? `?${search}` : ''
 }
 
+const PUZZLE_WORD = 'PLAYGROUND'
+const puzzleTones: TileTone[] = ['paper', 'lime', 'paper', 'paper', 'cobalt', 'cobalt', 'paper', 'lime', 'paper', 'ink']
+// A fixed first scramble (A and U swapped) keeps the first paint stable; "まぜる" makes random ones.
+const firstOrder = swapTiles(solvedOrder(PUZZLE_WORD.length), 2, 7)
+
 export function CatalogPage({ catalog }: { catalog: Catalog }) {
   const [params, setParams] = useSearchParams()
   const location = useLocation()
   const filters = readFilters(params)
   const projects = selectProjects(catalog.projects, filters)
   const listed = selectProjects(catalog.projects, noFilters)
-  const featured = listed.find((project) => project.featured)
   const filtered = Boolean(filters.query || filters.category || filters.status)
   const labelOf = (id: string) => catalog.categories.find((category) => category.id === id)?.label ?? ''
   const worksRef = useRef<HTMLElement>(null)
+
+  // The card beside the puzzle: the featured work first, then a random listed work for every solve.
+  const [reveal, setReveal] = useState<{ id?: string; unlocked: boolean }>(() => ({ id: (listed.find((project) => project.featured) ?? listed[0])?.id, unlocked: false }))
+  const revealed = listed.find((project) => project.id === reveal.id) ?? listed[0]
+  const unlockNext = () => {
+    const next = pickNext(listed, revealed?.id, Math.random)
+    setReveal({ id: next?.id, unlocked: true })
+    return next ? `${next.title}が出てきました。` : ''
+  }
 
   // The field filters as you type. It keeps its own text (spaces included) and follows the URL only when the
   // query changes elsewhere, such as the back button or the reset link.
@@ -42,33 +58,18 @@ export function CatalogPage({ catalog }: { catalog: Catalog }) {
 
   return <>
     <div className="container home-top">
-      {/* One dark stage like an arcade screen: the intro on the left, the pickup game on a tilted screen on the
-          right, and a ghost "PLAY" behind both. The featured thumbnail, blurred, tints the whole stage. */}
-      <section className="home-hero dark-scope" aria-labelledby="home-title">
-        {featured?.thumbnail && <img className="home-hero__backdrop" src={featured.thumbnail.src} alt="" />}
-        <span className="home-hero__ghost" aria-hidden="true">PLAY</span>
-        <div className="home-hero__intro">
-          <p className="eyebrow eyebrow--accent">PIRAFU2411 PLAYGROUND</p>
-          <h1 id="home-title" tabIndex={-1}><span>作ったゲームと</span><br /><span>ツールの置き場</span></h1>
-          <p className="home-hero__lead">個人で作ったものを置いています。ブラウザでそのまま遊べるものもあります。</p>
-          <nav className="category-strip" aria-label="カテゴリー別に見る">
-            {catalog.categories.map((category) => {
-              const count = listed.filter((project) => project.category === category.id).length
-              // "Other" appears only once it has something in it; the main three always show where they stand.
-              if (category.id === 'other' && count === 0) return null
-              return <Link key={category.id} to={{ search: toSearch({ ...noFilters, category: category.id }), hash: '#works' }}
-                className={`category-link tone-${category.id}`} aria-label={`${category.label}（${count ? `${count}作品` : '準備中'}）`}>
-                <CategoryIcon category={category.id} size={18} />
-                <span>{category.label}</span>
-                {count ? <span className="category-link__count">{count}</span> : <span className="category-link__note">準備中</span>}
-              </Link>
-            })}
-            <Link to={{ search: location.search, hash: '#works' }} state={searchFocusState} className="category-link category-link--search">
-              <SearchIcon size={18} /><span>作品を探す</span>
-            </Link>
-          </nav>
+      {/* The stage: the headline and a PLAYGROUND tile puzzle on the left, and on the right the card that a solved
+          puzzle fills with a random work. */}
+      <section className="home-stage" aria-labelledby="home-title">
+        <div className="home-stage__play">
+          <p className="eyebrow">01 / PLAY</p>
+          <h1 id="home-title" tabIndex={-1}><span className="marker">つくったものが、</span><wbr /><span className="marker">あそび場に。</span></h1>
+          <p className="home-stage__lead">個人で作ったゲームやツールを置いています。タイルを並べかえて PLAYGROUND にすると、作品がひとつ出てきます。</p>
+          <TilePuzzle name="home" word={PUZZLE_WORD} tones={puzzleTones} columns={5} initialOrder={firstOrder}
+            label="PLAYGROUNDのタイルパズル" onSolve={unlockNext}
+            hint="タイルを2枚選ぶと入れ替わります。選んだタイルは矢印キーでも動かせます。" />
         </div>
-        {featured && <FeaturedTile project={featured} categoryLabel={labelOf(featured.category)} />}
+        {revealed && <UnlockCard project={revealed} categoryLabel={labelOf(revealed.category)} unlocked={reveal.unlocked} />}
       </section>
       <section className="updates-strip" aria-labelledby="updates-title">
         <h2 id="updates-title">更新履歴</h2>
@@ -84,10 +85,7 @@ export function CatalogPage({ catalog }: { catalog: Catalog }) {
 
     <section id="works" ref={worksRef} className="container works" aria-labelledby="works-title">
       <div className="works__header">
-        <div>
-          <p className="eyebrow">ALL WORKS</p>
-          <h2 id="works-title">すべての作品</h2>
-        </div>
+        <h2 id="works-title"><span className="marker">すべての作品</span><span className="works__count" aria-hidden="true">{String(listed.length).padStart(2, '0')}</span></h2>
         <nav aria-label="カテゴリー" className="category-nav">
           <ul>
             <li><Link to={toSearch({ ...filters, category: '' }) || '/'} className="chip" aria-current={filters.category ? undefined : 'true'}>すべて</Link></li>

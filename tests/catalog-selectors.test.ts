@@ -25,12 +25,13 @@ describe('catalog selectors', () => {
     expect(selectProjects(data, empty).map(({ id }) => id)).toEqual(['featured', 'a', 'z'])
     expect(data[0].id).toBe('z')
   })
-  it('relates listed projects of the same category without the current one', () => {
+  it('relates listed projects of the same category first, then other listed works, without the current one', () => {
     const current = project('current', { category: 'games' })
     const data = [current, project('b', { category: 'games' }), project('a', { category: 'games' }), project('pick', { category: 'games', title: 'zzz', featured: true }),
       project('hidden', { category: 'games', visibility: 'unlisted' }), project('other')]
     expect(selectRelatedProjects(data, current).map(({ id }) => id)).toEqual(['pick', 'a', 'b'])
     expect(selectRelatedProjects(data, current, 2).map(({ id }) => id)).toEqual(['pick', 'a'])
+    expect(selectRelatedProjects(data, current, 5).map(({ id }) => id)).toEqual(['pick', 'a', 'b', 'other'])
   })
   it('serializes only known filters and restores bookmarked conditions', () => {
     const params = writeFilters({ query: ' note ', category: 'apps', status: 'planned' })

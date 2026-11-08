@@ -14,9 +14,10 @@ export function CategoryArt({ category, label }: { category: string; label?: str
 }
 
 export function CategoryPill({ category, label }: { category: string; label: string }) {
-  return <span className={`pill ${toneClass(category)}`}><CategoryIcon category={category} size={15} />{label}</span>
+  return <span className={`pill pill--tone ${toneClass(category)}`}><CategoryIcon category={category} size={15} />{label}</span>
 }
 
+// Each status has its own icon shape, so the badge never relies on color alone.
 export function StatusPill({ status }: { status: DevelopmentStatus }) {
-  return <span className="pill"><StatusIcon status={status} />{statusLabels[status]}</span>
+  return <span className="pill pill--status"><StatusIcon status={status} />{statusLabels[status]}</span>
 }

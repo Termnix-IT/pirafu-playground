@@ -137,3 +137,18 @@ test('テーマは未選択ならOSの設定に従い、切り替えた選択は
   await expect(root).toHaveAttribute('data-theme', 'light')
   await expect(page.getByRole('button', { name: 'ダークテーマに切り替え' })).toBeVisible()
 })
+
+test('トップのタイルパズルをキーボードでそろえると作品が出てくる', async ({ page }) => {
+  await page.goto('/')
+  const puzzle = page.getByRole('group', { name: 'PLAYGROUNDのタイルパズル' })
+  await expect(page.getByText('ピックアップ', { exact: true })).toBeVisible()
+  // The first scramble swaps A (3rd) and U (8th), one row apart. Choose U and move it down into place.
+  await puzzle.getByRole('button', { name: 'U（3番目）' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(puzzle.getByRole('button', { name: 'U（3番目）' })).toHaveAttribute('aria-pressed', 'true')
+  await page.keyboard.press('ArrowDown')
+  await expect(puzzle.getByRole('button', { name: 'U（8番目）' })).toBeFocused()
+  await expect(puzzle.getByRole('button')).toHaveText(['P', 'L', 'A', 'Y', 'G', 'R', 'O', 'U', 'N', 'D'])
+  await expect(page.getByText('アンロック！')).toBeVisible()
+  await expect(page.locator('#unlock-title')).not.toHaveText('DOPASWEEPER')
+})
