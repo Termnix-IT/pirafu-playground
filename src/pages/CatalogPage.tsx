@@ -6,7 +6,7 @@ import { UnlockCard } from '../components/ProjectCard'
 import { ProjectList } from '../components/ProjectList'
 import { TilePuzzle } from '../components/TilePuzzle'
 import type { TileTone } from '../components/TilePuzzle'
-import { changelog } from '../data/changelog'
+import { changelog, changelogText } from '../data/changelog'
 import { readFilters, selectProjects, writeFilters } from '../features/catalog/selectors'
 import { statusLabels } from '../features/catalog/types'
 import type { Catalog, CatalogFilters } from '../features/catalog/types'
@@ -39,7 +39,7 @@ export function CatalogPage({ catalog }: { catalog: Catalog }) {
   const unlockNext = () => {
     const next = pickNext(listed, revealed?.id, Math.random)
     setReveal({ id: next?.id, unlocked: true })
-    return next ? `${next.title}が出てきました。` : ''
+    return next ? `${next.title}を表示しました。` : ''
   }
 
   // The field filters as you type. It keeps its own text (spaces included) and follows the URL only when the
@@ -62,22 +62,24 @@ export function CatalogPage({ catalog }: { catalog: Catalog }) {
           puzzle fills with a random work. */}
       <section className="home-stage" aria-labelledby="home-title">
         <div className="home-stage__play">
-          <p className="eyebrow">01 / PLAY</p>
-          <h1 id="home-title" tabIndex={-1}><span className="marker">つくったものが、</span><wbr /><span className="marker">あそび場に。</span></h1>
-          <p className="home-stage__lead">個人で作ったゲームやツールを置いています。タイルを並べかえて PLAYGROUND にすると、作品がひとつ出てきます。</p>
+          <h1 id="home-title" tabIndex={-1}><span className="marker">作ったゲームとツール</span></h1>
+          <p className="home-stage__lead">Pirafu2411が個人で作ったものを置いています。ブラウザでそのまま開けるものもあります。</p>
           <TilePuzzle name="home" word={PUZZLE_WORD} tones={puzzleTones} columns={5} initialOrder={firstOrder}
             label="PLAYGROUNDのタイルパズル" onSolve={unlockNext}
-            hint="タイルを2枚選ぶと入れ替わります。選んだタイルは矢印キーでも動かせます。" />
+            hint="PLAYGROUND の順に並べると、作品をひとつ選んで表示します。タイルは2枚選ぶと入れ替わり、選んだタイルは矢印キーでも動かせます。" />
         </div>
         {revealed && <UnlockCard project={revealed} categoryLabel={labelOf(revealed.category)} unlocked={reveal.unlocked} />}
       </section>
       <section className="updates-strip" aria-labelledby="updates-title">
         <h2 id="updates-title">更新履歴</h2>
         <ol>
-          {changelog.slice(0, 3).map((entry) => <li key={`${entry.date}-${entry.text}`}>
-            <time dateTime={entry.date}>{entry.date.slice(5).replace('-', '.')}</time>
-            <span>{entry.text}</span>
-          </li>)}
+          {changelog.slice(0, 3).map((entry) => {
+            const text = changelogText(entry, catalog.projects)
+            return <li key={`${entry.date}-${text}`}>
+              <time dateTime={entry.date}>{entry.date.slice(5).replace('-', '.')}</time>
+              <span>{text}</span>
+            </li>
+          })}
         </ol>
         <Link to="/about#changelog">すべて見る</Link>
       </section>
@@ -97,7 +99,9 @@ export function CatalogPage({ catalog }: { catalog: Catalog }) {
           </ul>
         </nav>
       </div>
-      <form role="search" className="works__toolbar" onSubmit={(event) => event.preventDefault()}>
+      {/* Not a <form>: the fields filter as they change, so there is nothing to submit, and Enter in a form could
+          fall through to a native submission that reloads the page without the query. */}
+      <div role="search" aria-label="作品の検索" className="works__toolbar">
         <div className="field field--grow">
           <label htmlFor={SEARCH_INPUT_ID}>タイトル・タグ</label>
           <div className="search-input">
@@ -117,7 +121,7 @@ export function CatalogPage({ catalog }: { catalog: Catalog }) {
         </div>
         <p role="status" aria-live="polite" aria-atomic="true" className="result-count">{projects.length}件の作品</p>
         {filtered && <Link to={{ pathname: '/', hash: '#works' }} className="reset-link">条件を解除</Link>}
-      </form>
+      </div>
       <ProjectList projects={projects} categories={catalog.categories} showUpcoming={!filtered} />
     </section>
   </>

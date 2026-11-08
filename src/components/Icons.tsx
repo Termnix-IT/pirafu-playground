@@ -23,7 +23,6 @@ export const MoonIcon = ({ size }: IconProps) => <Icon size={size}><path d="M20 
 export const PlusIcon =({ size }: IconProps) => <Icon size={size}><path d="M12 5v14M5 12h14" /></Icon>
 export const ArrowUpRightIcon = ({ size }: IconProps) => <Icon size={size}><path d="M7 17L17 7M8.5 7H17v8.5" /></Icon>
 export const ShuffleIcon = ({ size }: IconProps) => <Icon size={size}><path d="M3.5 7h3.2c4.6 0 6 10 10.6 10h3.2M3.5 17h3.2c1.6 0 2.7-1.2 3.6-2.8M13.7 9.8c.9-1.6 2-2.8 3.6-2.8h3.2M18 4.5L20.5 7 18 9.5M18 14.5l2.5 2.5-2.5 2.5" /></Icon>
-export const UnlockIcon = ({ size }: IconProps) => <Icon size={size}><rect x="5" y="10.5" width="14" height="10" rx="2" /><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 6.8-1.2M12 14.5v2.5" /></Icon>
 export const DocIcon =({ size }: IconProps) => <Icon size={size}><path d="M7 3.5h7l4 4v13H7z" /><path d="M14 3.5v4h4M9.5 12h6M9.5 15.5h6" /></Icon>
 
 export function CategoryIcon({ category, size }: { category: string } & IconProps) {

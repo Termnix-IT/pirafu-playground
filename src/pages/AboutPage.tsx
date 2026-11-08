@@ -1,9 +1,9 @@
 import { Link } from 'react-router'
-import { changelog } from '../data/changelog'
+import { changelog, changelogText } from '../data/changelog'
 import { findProject, selectProjects } from '../features/catalog/selectors'
 import type { Catalog } from '../features/catalog/types'
 
-const kindLabels = { site: 'サイト', project: '作品' } as const
+const kindLabels = { site: 'サイト', launch: 'サイト', project: '作品' } as const
 const decorTones = ['paper', 'lime', 'cobalt', 'lime', 'cobalt']
 
 export function AboutPage({ catalog }: { catalog: Catalog }) {
@@ -15,10 +15,7 @@ export function AboutPage({ catalog }: { catalog: Catalog }) {
 
   return <div className="container page">
     <div className="page-header">
-      <div>
-        <p className="eyebrow">02 / ABOUT</p>
-        <h1 tabIndex={-1}><span className="marker">このサイトについて</span></h1>
-      </div>
+      <h1 tabIndex={-1}><span className="marker">このサイトについて</span></h1>
       <p className="decor-tiles" aria-hidden="true">
         {Array.from('ABOUT').map((letter, index) => <span key={letter} className={`title-tile tone-tile-${decorTones[index]}`}>{letter}</span>)}
       </p>
@@ -40,12 +37,13 @@ export function AboutPage({ catalog }: { catalog: Catalog }) {
         <h2 id="changelog-title" className="tile__title"><span className="marker">更新履歴</span></h2>
         <ol className="changelog">
           {changelog.map((entry) => {
-            const project = entry.projectId ? findProject(catalog.projects, entry.projectId) : undefined
-            return <li key={`${entry.date}-${entry.text}`}>
+            const project = entry.kind === 'project' ? findProject(catalog.projects, entry.projectId) : undefined
+            const text = changelogText(entry, catalog.projects)
+            return <li key={`${entry.date}-${text}`}>
               <time dateTime={entry.date}>{entry.date.replaceAll('-', '.')}</time>
               <span className={`changelog__kind changelog__kind--${entry.kind}`}>{kindLabels[entry.kind]}</span>
               <p>
-                {entry.text}
+                {text}
                 {project?.visibility === 'public' && <> <Link to={`/projects/${project.id}`}>作品ページへ</Link></>}
               </p>
             </li>

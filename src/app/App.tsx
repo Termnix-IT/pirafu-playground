@@ -110,7 +110,7 @@ export function App({ catalog }: { catalog: Catalog }) {
     </main>
     <footer className="site-footer">
       <div className="site-footer__inner container">
-        <p><span className="site-footer__name">Pirafu2411 Playground</span><span>つくったものが、あそび場に。</span></p>
+        <p className="site-footer__name">Pirafu2411 Playground</p>
         <Link to="/about">このサイトについて</Link>
       </div>
     </footer>

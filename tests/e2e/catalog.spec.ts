@@ -141,7 +141,7 @@ test('テーマは未選択ならOSの設定に従い、切り替えた選択は
 test('トップのタイルパズルをキーボードでそろえると作品が出てくる', async ({ page }) => {
   await page.goto('/')
   const puzzle = page.getByRole('group', { name: 'PLAYGROUNDのタイルパズル' })
-  await expect(page.getByText('ピックアップ', { exact: true })).toBeVisible()
+  await expect(page.getByText('おすすめ', { exact: true })).toBeVisible()
   // The first scramble swaps A (3rd) and U (8th), one row apart. Choose U and move it down into place.
   await puzzle.getByRole('button', { name: 'U（3番目）' }).focus()
   await page.keyboard.press('Enter')
@@ -149,6 +149,6 @@ test('トップのタイルパズルをキーボードでそろえると作品�
   await page.keyboard.press('ArrowDown')
   await expect(puzzle.getByRole('button', { name: 'U（8番目）' })).toBeFocused()
   await expect(puzzle.getByRole('button')).toHaveText(['P', 'L', 'A', 'Y', 'G', 'R', 'O', 'U', 'N', 'D'])
-  await expect(page.getByText('アンロック！')).toBeVisible()
+  await expect(page.getByText('パズルで選んだ作品')).toBeVisible()
   await expect(page.locator('#unlock-title')).not.toHaveText('DOPASWEEPER')
 })

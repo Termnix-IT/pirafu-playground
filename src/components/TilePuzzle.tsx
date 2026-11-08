@@ -55,7 +55,7 @@ export function TilePuzzle({ word, tones, columns, initialOrder, label, hint, on
     place(next)
     select(byKey ? to : null)
     setFocusPosition(byKey ? to : from)
-    if (!isSolved(letters, current) && isSolved(letters, next)) setMessage(`${word}がそろいました。${onSolve?.() ?? ''}`)
+    if (!isSolved(letters, current) && isSolved(letters, next)) setMessage(`${word}の順に並びました。${onSolve?.() ?? ''}`)
     else setMessage(`${letters[current[from]]}と${letters[current[to]]}を入れ替えました。`)
   }
 

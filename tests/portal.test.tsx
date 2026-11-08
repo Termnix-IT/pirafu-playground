@@ -45,7 +45,7 @@ describe('Portal user flows', () => {
   })
   it('shows the featured project as the pickup tile on the home page', () => {
     open()
-    const pickup = screen.getByText('ピックアップ').closest('article')
+    const pickup = screen.getByText('おすすめ').closest('article')
     expect(pickup).not.toBeNull()
     expect(within(pickup as HTMLElement).getByRole('heading', { level: 2, name: 'ノート' })).toBeVisible()
     expect(within(pickup as HTMLElement).getByRole('link', { name: 'つかう（別タブ）' })).toHaveAttribute('href', 'https://example.com/app/')
@@ -62,9 +62,9 @@ describe('Portal user flows', () => {
     expect(within(puzzle).getByRole('button', { name: 'U（3番目）' })).toHaveAttribute('aria-pressed', 'true')
     await userEvent.click(within(puzzle).getByRole('button', { name: 'A（8番目）' }))
     expect(within(puzzle).getByRole('button', { name: 'A（3番目）' })).toHaveAttribute('aria-pressed', 'false')
-    const card = screen.getByText('アンロック！').closest('article') as HTMLElement
+    const card = screen.getByText('パズルで選んだ作品').closest('article') as HTMLElement
     expect(within(card).getByRole('heading', { level: 2, name: 'ゲーム' })).toBeVisible()
-    expect(screen.getByText(/PLAYGROUNDがそろいました。ゲームが出てきました。/)).toBeInTheDocument()
+    expect(screen.getByText(/PLAYGROUNDの順に並びました。ゲームを表示しました。/)).toBeInTheDocument()
   })
   it('moves a chosen tile with the arrow keys and moves focus without one', async () => {
     open('/missing-page')

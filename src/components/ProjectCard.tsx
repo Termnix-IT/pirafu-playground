@@ -2,7 +2,7 @@ import { useState, ViewTransition } from 'react'
 import { Link } from 'react-router'
 import type { CatalogProject } from '../features/catalog/types'
 import { CategoryArt, CategoryPill, StatusPill } from './Badges'
-import { StarIcon, UnlockIcon } from './Icons'
+import { ShuffleIcon, StarIcon } from './Icons'
 import { isLaunchable } from '../features/catalog/selectors'
 import { LaunchAction } from './LaunchAction'
 
@@ -19,7 +19,7 @@ function CardMedia({ project, label }: { project: CatalogProject; label?: string
 export function UnlockCard({ project, categoryLabel, unlocked }: { project: CatalogProject; categoryLabel: string; unlocked: boolean }) {
   return <article className={`unlock-card${unlocked ? ' is-unlocked' : ''}`} aria-labelledby="unlock-title">
     <p className="unlock-card__band">
-      {unlocked ? <><UnlockIcon size={22} />アンロック！</> : <><StarIcon size={20} />ピックアップ</>}
+      {unlocked ? <><ShuffleIcon size={20} />パズルで選んだ作品</> : <><StarIcon size={20} />おすすめ</>}
     </p>
     {/* Keyed by project so a newly revealed work pops in instead of morphing from the previous one. */}
     <div key={project.id} className="unlock-card__body">
