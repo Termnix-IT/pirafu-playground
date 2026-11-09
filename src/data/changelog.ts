@@ -12,6 +12,7 @@ export type ChangelogEntry =
   | { date: string; kind: 'launch' }
 
 export const changelog: ChangelogEntry[] = [
+  { date: '2026-11-09', kind: 'site', area: 'ページ' },
   { date: '2026-11-08', kind: 'site', area: 'ページ' },
   { date: '2026-11-08', kind: 'site', area: '文章' },
   { date: '2026-10-27', kind: 'site', area: 'ページ' },
