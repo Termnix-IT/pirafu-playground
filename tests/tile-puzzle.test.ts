@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isSolved, neighbor, pickNext, shuffleOrder, solvedOrder, swapTiles } from '../src/features/playground/tilePuzzle'
+import { isSolved, neighbor, shuffleOrder, solvedOrder, swapTiles } from '../src/features/playground/tilePuzzle'
 
 const word = [...'PLAYGROUND']
 // A fixed sequence stands in for Math.random so the shuffles are repeatable.
@@ -31,12 +31,5 @@ describe('tile puzzle rules', () => {
     const order = shuffleOrder(word, random)
     expect(isSolved(word, order)).toBe(false)
     expect([...order].sort((a, b) => a - b)).toEqual(solvedOrder(10))
-  })
-  it('picks another work than the current one when there is one', () => {
-    const items = [{ id: 'a' }, { id: 'b' }, { id: 'c' }]
-    expect(pickNext(items, 'a', () => 0)?.id).toBe('b')
-    expect(pickNext(items, 'a', () => 0.99)?.id).toBe('c')
-    expect(pickNext([{ id: 'a' }], 'a', () => 0)?.id).toBe('a')
-    expect(pickNext([], 'a', () => 0)).toBeUndefined()
   })
 })

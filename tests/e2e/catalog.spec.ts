@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test'
 
 // Runs against the real built catalog: DOPASWEEPER is the listed work, and sample-unlisted covers the showcase page.
 
-// Links inside the work grid; the pickup tile above it links to the same projects.
-const projectLink = (id: string) => `#works a[href="/projects/${id}"]`
+// The title link of a work's row. Each row also has a "くわしく見る" link to the same page.
+const projectLink = (id: string) => `#works h3 a[href="/projects/${id}"]`
 const launchLinkName = /起動|アプリを開く|利用する|あそぶ|つかう/
 
 test('一覧から詳細へ移動し、直接アクセスと再読込ができる', async ({ page }) => {
@@ -29,23 +29,18 @@ test('一覧から詳細へ移動し、直接アクセスと再読込ができ�
   expect(failures).toEqual([])
 })
 
-test('検索条件をURLで復元し、戻る操作と条件解除を利用できる', async ({ page }) => {
-  await page.goto('/')
-  const search = page.getByLabel('タイトル・タグ', { exact: true })
-  await search.fill('存在しない作品検索語')
-  await expect(page).toHaveURL(/q=/)
+test('URLに残った検索語を表示し、条件解除と戻る操作を利用できる', async ({ page }) => {
+  await page.goto('/?q=存在しない作品検索語')
   await expect(page.locator('#works a[href^="/projects/"]')).toHaveCount(0)
-  await expect(page.getByRole('main')).toContainText(/0\s*件|見つかりません|ありません/)
-  await page.reload()
-  await expect(search).toHaveValue('存在しない作品検索語')
+  await expect(page.getByRole('main')).toContainText('「存在しない作品検索語」で絞り込んでいます。')
+  await expect(page.getByRole('main')).toContainText('該当する作品がありません')
   await page.getByRole('link', { name: '条件を解除' }).click()
   await expect(page.locator(projectLink('dopasweeper'))).toBeVisible()
   await page.goBack()
-  await expect(search).toHaveValue('存在しない作品検索語')
   await expect(page.locator('#works a[href^="/projects/"]')).toHaveCount(0)
 })
 
-test('カテゴリーと開発状況を組み合わせて絞り込める', async ({ page }) => {
+test('カテゴリーで絞り込み、再読み込みしても選択が残る', async ({ page }) => {
   await page.goto('/')
   const categories = page.getByRole('navigation', { name: 'カテゴリー', exact: true })
   await categories.getByRole('link', { name: 'Webアプリ' }).click()
@@ -54,13 +49,10 @@ test('カテゴリーと開発状況を組み合わせて絞り込める', async
   await categories.getByRole('link', { name: 'ミニゲーム' }).click()
   await expect(page).toHaveURL(/category=games/)
   await expect(page.locator(projectLink('dopasweeper'))).toBeVisible()
-  const status = page.getByRole('combobox', { name: '開発状況', exact: true })
-  await status.selectOption('archived')
-  await expect(page).toHaveURL(/status=archived/)
-  await expect(page).toHaveURL(/category=games/)
-  await expect(page.locator(projectLink('dopasweeper'))).toHaveCount(0)
   await page.reload()
-  await expect(status).toHaveValue('archived')
+  await expect(categories.getByRole('link', { name: 'ミニゲーム' })).toHaveAttribute('aria-current', 'true')
+  await categories.getByRole('link', { name: 'すべて' }).click()
+  await expect(page).toHaveURL(/\/$/)
 })
 
 test('非一覧作品は詳細のみ表示し、非掲載作品と未知URLは未検出にする', async ({ page }) => {
@@ -76,7 +68,7 @@ test('非一覧作品は詳細のみ表示し、非掲載作品と未知URLは�
   await expect(page.getByRole('main')).toContainText('Pirafu2411')
 })
 
-test('狭い画面でキーボードから検索でき、横にはみ出さない', async ({ page }) => {
+test('狭い画面でキーボードから本文へ移動でき、横にはみ出さない', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 })
   await page.goto('/')
   const skip = page.getByRole('link', { name: /本文|メイン/ })
@@ -84,19 +76,19 @@ test('狭い画面でキーボードから検索でき、横にはみ出さな�
   await expect(skip).toBeFocused()
   await page.keyboard.press('Enter')
   await expect(page.getByRole('main')).toBeFocused()
-  const search = page.getByLabel('タイトル・タグ', { exact: true })
-  await search.focus()
-  await search.fill('存在しない作品検索語')
-  await search.press('Enter')
-  await expect(page).toHaveURL(/q=/)
-  await expect(page.locator('#works a[href^="/projects/"]')).toHaveCount(0)
+  await expect(page.locator(projectLink('dopasweeper'))).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  for (const path of ['/projects/dopasweeper', '/about', '/missing-page']) {
+    await page.goto(path)
+    await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toBeVisible()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  }
 })
 
 test('動きを減らす設定では入場アニメーションを止め、遷移はそのまま使える', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
-  const card = page.locator('.work-grid > li').first()
+  const card = page.locator('.work-list > li').first()
   await expect(card).toBeVisible()
   expect(await card.evaluate((element) => getComputedStyle(element).animationName)).toBe('none')
   await page.locator(projectLink('dopasweeper')).click()
@@ -114,16 +106,9 @@ test('メニューは選択中の項目だけを示し、切り替えても文�
   await nav.getByRole('link', { name: 'このサイトについて' }).click()
   await expect(page).toHaveURL(/\/about$/)
   await expect(nav.getByRole('link', { name: 'このサイトについて' })).toHaveAttribute('aria-current', 'page')
-  await expect(nav.locator('.nav-indicator')).toHaveCount(1)
+  await expect(nav.locator('[aria-current]')).toHaveCount(1)
   expect(await labels.evaluateAll((items) => items.map((item) => item.getBoundingClientRect().left))).toEqual(before)
   await expect(page.getByRole('heading', { name: '更新履歴' })).toBeVisible()
-})
-
-test('Ctrl+Kでどのページからでも作品検索へ移動できる', async ({ page }) => {
-  await page.goto('/projects/dopasweeper')
-  await page.keyboard.press('Control+k')
-  await expect(page).toHaveURL(/\/#works$/)
-  await expect(page.getByLabel('タイトル・タグ', { exact: true })).toBeFocused()
 })
 
 test('テーマは未選択ならOSの設定に従い、切り替えた選択は再読み込み後も保たれる', async ({ page }) => {
@@ -138,17 +123,30 @@ test('テーマは未選択ならOSの設定に従い、切り替えた選択は
   await expect(page.getByRole('button', { name: 'ダークテーマに切り替え' })).toBeVisible()
 })
 
-test('トップのタイルパズルをキーボードでそろえると作品が出てくる', async ({ page }) => {
+test('一覧の行から作品を別タブで開ける', async ({ page }) => {
   await page.goto('/')
-  const puzzle = page.getByRole('group', { name: 'PLAYGROUNDのタイルパズル' })
-  await expect(page.getByText('おすすめ', { exact: true })).toBeVisible()
-  // The first scramble swaps A (3rd) and U (8th), one row apart. Choose U and move it down into place.
-  await puzzle.getByRole('button', { name: 'U（3番目）' }).focus()
+  const row = page.getByRole('article', { name: 'DOPASWEEPER' })
+  const launch = row.getByRole('link', { name: launchLinkName })
+  await expect(launch).toHaveAttribute('href', /^https:\/\//)
+  await expect(launch).toHaveAttribute('target', '_blank')
+  await row.getByRole('link', { name: 'DOPASWEEPERをくわしく見る' }).click()
+  await expect(page).toHaveURL(/\/projects\/dopasweeper$/)
+})
+
+test('404のタイルパズルをキーボードでそろえられる', async ({ page }) => {
+  await page.goto('/missing-page')
+  const puzzle = page.getByRole('group', { name: 'HOMEのタイルパズル' })
+  // The first order is M E H O. Swap M with H, move focus to E with the arrow key, then swap E with O.
+  await puzzle.getByRole('button', { name: 'M（1番目）' }).focus()
   await page.keyboard.press('Enter')
-  await expect(puzzle.getByRole('button', { name: 'U（3番目）' })).toHaveAttribute('aria-pressed', 'true')
-  await page.keyboard.press('ArrowDown')
-  await expect(puzzle.getByRole('button', { name: 'U（8番目）' })).toBeFocused()
-  await expect(puzzle.getByRole('button')).toHaveText(['P', 'L', 'A', 'Y', 'G', 'R', 'O', 'U', 'N', 'D'])
-  await expect(page.getByText('パズルで選んだ作品')).toBeVisible()
-  await expect(page.locator('#unlock-title')).not.toHaveText('DOPASWEEPER')
+  await expect(puzzle.getByRole('button', { name: 'M（1番目）' })).toHaveAttribute('aria-pressed', 'true')
+  await puzzle.getByRole('button', { name: 'H（3番目）' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(puzzle.getByRole('button', { name: 'H（1番目）' })).toBeFocused()
+  await page.keyboard.press('ArrowRight')
+  await expect(puzzle.getByRole('button', { name: 'E（2番目）' })).toBeFocused()
+  await page.keyboard.press('Enter')
+  await puzzle.getByRole('button', { name: 'O（4番目）' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(puzzle.getByRole('button')).toHaveText(['H', 'O', 'M', 'E'])
 })

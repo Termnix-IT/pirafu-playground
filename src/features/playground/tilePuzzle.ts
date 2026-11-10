@@ -1,4 +1,4 @@
-// Rules of the letter-tile puzzle on the home and Not Found pages, kept free of DOM and React so they can be tested.
+// Rules of the letter-tile puzzle on the Not Found page, kept free of DOM and React so they can be tested.
 // A puzzle is the target word plus `order`: order[position] is the index of the letter tile placed at that position.
 
 export type Direction = 'left' | 'right' | 'up' | 'down'
@@ -38,11 +38,4 @@ export function shuffleOrder(word: readonly string[], random: () => number, swap
     }
     if (!isSolved(word, order)) return order
   }
-}
-
-// The next work to reveal after solving: a random one other than the current, when there is another.
-export function pickNext<T extends { id: string }>(items: readonly T[], currentId: string | undefined, random: () => number): T | undefined {
-  const others = items.filter((item) => item.id !== currentId)
-  const pool = others.length ? others : items
-  return pool[Math.floor(random() * pool.length)]
 }

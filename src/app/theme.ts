@@ -2,7 +2,7 @@
 export type Theme = 'light' | 'dark'
 
 export const THEME_KEY = 'pirafu-theme'
-const themeColors: Record<Theme, string> = { light: '#f7f4ec', dark: '#121110' }
+const themeColors: Record<Theme, string> = { light: '#f3f4f6', dark: '#101216' }
 
 export function readStoredTheme(): Theme | null {
   try {
