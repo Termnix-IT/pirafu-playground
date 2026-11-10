@@ -4,13 +4,10 @@ import { isSolved, neighbor, shuffleOrder, swapTiles } from '../features/playgro
 import type { Direction } from '../features/playground/tilePuzzle'
 import { ShuffleIcon } from './Icons'
 
-export type TileTone = 'paper' | 'lime' | 'cobalt' | 'ink'
-
 const arrowDirections: Record<string, Direction> = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' }
 
 interface TilePuzzleProps {
   word: string
-  tones: TileTone[]
   columns: number
   initialOrder: number[]
   label: string
@@ -24,7 +21,7 @@ interface TilePuzzleProps {
 // A letter-tile puzzle made of real buttons. Choose one tile and then another to swap them; a chosen tile also moves
 // with the arrow keys. Without a chosen tile the arrow keys move focus between tiles (one tab stop for the grid).
 // Swaps run inside a transition so the named tiles slide to their new places where view transitions are supported.
-export function TilePuzzle({ word, tones, columns, initialOrder, label, hint, onSolve, name }: TilePuzzleProps) {
+export function TilePuzzle({ word, columns, initialOrder, label, hint, onSolve, name }: TilePuzzleProps) {
   const letters = Array.from(word)
   const [order, setOrder] = useState(initialOrder)
   const [selected, setSelected] = useState<number | null>(null)
@@ -99,7 +96,7 @@ export function TilePuzzle({ word, tones, columns, initialOrder, label, hint, on
       style={{ '--columns': columns } as CSSProperties}>
       {order.map((tile, position) => <ViewTransition key={tile} name={`${name}-tile-${tile}`}>
         <button type="button" ref={(element) => { tileRefs.current[tile] = element }}
-          className={`puzzle-tile tone-tile-${tones[tile % tones.length]}`} style={{ '--i': position } as CSSProperties}
+          className="puzzle-tile" style={{ '--i': position } as CSSProperties}
           tabIndex={position === focusPosition ? 0 : -1} aria-pressed={selected === position}
           aria-label={`${letters[tile]}（${position + 1}番目）`}
           onFocus={() => setFocusPosition(orderRef.current.indexOf(tile))} onClick={() => activate(orderRef.current.indexOf(tile))}
@@ -110,7 +107,7 @@ export function TilePuzzle({ word, tones, columns, initialOrder, label, hint, on
     </div>
     <div className="puzzle__controls">
       <p id={hintId} className="puzzle__hint">{hint}</p>
-      <button type="button" className="button button--outline button--small" onClick={shuffle}><ShuffleIcon size={18} />まぜる</button>
+      <button type="button" className="button" onClick={shuffle}><ShuffleIcon size={18} />まぜる</button>
     </div>
     <p className="visually-hidden" aria-live="polite">{message}</p>
   </div>

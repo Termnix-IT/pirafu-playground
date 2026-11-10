@@ -16,16 +16,28 @@ function open(path = '/', project: CatalogProject = base) {
 }
 
 describe('Portal user flows', () => {
-  it('restores bookmarked filters and displays the matching count', async () => {
-    open('/?q=note&category=apps')
-    expect(screen.getByLabelText('タイトル・タグ')).toHaveValue('note')
+  it('restores a bookmarked category and counts the matching works', () => {
+    open('/?category=apps')
     expect(screen.getByRole('link', { name: 'Webアプリ' })).toHaveAttribute('aria-current', 'true')
-    expect(screen.getByRole('link', { name: 'すべて' })).toHaveAttribute('href', '/?q=note')
+    expect(screen.getByRole('link', { name: 'すべて' })).toHaveAttribute('href', '/')
     expect(screen.getByRole('status')).toHaveTextContent('1件')
-    await userEvent.clear(screen.getByLabelText('タイトル・タグ'))
-    await userEvent.type(screen.getByLabelText('タイトル・タグ'), 'ない作品')
+    expect(screen.queryByRole('link', { name: '条件を解除' })).not.toBeInTheDocument()
+  })
+  it('names a search word that arrives in the URL and offers the way back to every work', async () => {
+    open('/?q=ない作品&category=apps')
     expect(screen.getByRole('status')).toHaveTextContent('0件')
     expect(screen.getByText(/該当する作品がありません/)).toBeVisible()
+    expect(screen.getByText('「ない作品」で絞り込んでいます。')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'すべて' })).toHaveAttribute('href', '/?q=%E3%81%AA%E3%81%84%E4%BD%9C%E5%93%81')
+    await userEvent.click(screen.getByRole('link', { name: '条件を解除' }))
+    expect(screen.getByRole('status')).toHaveTextContent('1件')
+    expect(screen.getByRole('link', { name: 'Webアプリ' })).toHaveAttribute('aria-current', 'true')
+  })
+  it('leaves categories without a listed work out of the chips', () => {
+    const catalog: Catalog = { schemaVersion: 1, categories: [{ id: 'apps', label: 'Webアプリ' }, { id: 'other', label: 'その他' }], projects: [base] }
+    render(<MemoryRouter><App catalog={catalog} /></MemoryRouter>)
+    const chips = screen.getByRole('navigation', { name: 'カテゴリー' })
+    expect(within(chips).getAllByRole('link').map((link) => link.textContent)).toEqual(['すべて1', 'Webアプリ1'])
   })
   it('moves focus and changes the title after internal navigation', async () => {
     open()
@@ -37,34 +49,24 @@ describe('Portal user flows', () => {
     expect(link).toHaveAttribute('href', 'https://example.com/app/')
     expect(link).toHaveAttribute('rel', 'noopener noreferrer')
   })
-  it('filters while typing and keeps spaces between words', async () => {
-    open('/', { ...base, tags: ['note', 'browser'] })
-    await userEvent.type(screen.getByLabelText('タイトル・タグ'), 'note browser')
-    expect(screen.getByLabelText('タイトル・タグ')).toHaveValue('note browser')
-    expect(screen.getByRole('status')).toHaveTextContent('1件')
-  })
-  it('shows the featured project as the pickup tile on the home page', () => {
+  it('puts the launch link and the detail link on each row of the home page', () => {
     open()
-    const pickup = screen.getByText('おすすめ').closest('article')
-    expect(pickup).not.toBeNull()
-    expect(within(pickup as HTMLElement).getByRole('heading', { level: 2, name: 'ノート' })).toBeVisible()
-    expect(within(pickup as HTMLElement).getByRole('link', { name: 'つかう（別タブ）' })).toHaveAttribute('href', 'https://example.com/app/')
+    const row = screen.getByRole('article', { name: 'ノート' })
+    expect(within(row).getByRole('link', { name: 'つかう（別タブ）' })).toHaveAttribute('href', 'https://example.com/app/')
+    expect(within(row).getByRole('link', { name: 'ノートをくわしく見る' })).toHaveAttribute('href', '/projects/demo')
+    expect(within(row).getByText('#note')).toBeVisible()
   })
-  it('unlocks another work when the PLAYGROUND tiles are put in order', async () => {
-    const catalog: Catalog = {
-      schemaVersion: 1, categories: [{ id: 'apps', label: 'Webアプリ' }, { id: 'games', label: 'ミニゲーム' }],
-      projects: [base, { ...base, id: 'game', title: 'ゲーム', category: 'games', featured: false }],
-    }
-    render(<MemoryRouter><App catalog={catalog} /></MemoryRouter>)
-    const puzzle = screen.getByRole('group', { name: 'PLAYGROUNDのタイルパズル' })
-    // The first scramble swaps A (3rd) and U (8th); swapping them back solves the word.
-    await userEvent.click(within(puzzle).getByRole('button', { name: 'U（3番目）' }))
-    expect(within(puzzle).getByRole('button', { name: 'U（3番目）' })).toHaveAttribute('aria-pressed', 'true')
-    await userEvent.click(within(puzzle).getByRole('button', { name: 'A（8番目）' }))
-    expect(within(puzzle).getByRole('button', { name: 'A（3番目）' })).toHaveAttribute('aria-pressed', 'false')
-    const card = screen.getByText('パズルで選んだ作品').closest('article') as HTMLElement
-    expect(within(card).getByRole('heading', { level: 2, name: 'ゲーム' })).toBeVisible()
-    expect(screen.getByText(/PLAYGROUNDの順に並びました。ゲームを表示しました。/)).toBeInTheDocument()
+  it('announces the solved HOME puzzle', async () => {
+    open('/missing-page')
+    const puzzle = screen.getByRole('group', { name: 'HOMEのタイルパズル' })
+    // The first order is M E H O: swap M with H, then E with O.
+    await userEvent.click(within(puzzle).getByRole('button', { name: 'M（1番目）' }))
+    expect(within(puzzle).getByRole('button', { name: 'M（1番目）' })).toHaveAttribute('aria-pressed', 'true')
+    await userEvent.click(within(puzzle).getByRole('button', { name: 'H（3番目）' }))
+    await userEvent.click(within(puzzle).getByRole('button', { name: 'E（2番目）' }))
+    await userEvent.click(within(puzzle).getByRole('button', { name: 'O（4番目）' }))
+    expect(within(puzzle).getAllByRole('button').map((button) => button.textContent)).toEqual(['H', 'O', 'M', 'E'])
+    expect(screen.getByText('HOMEの順に並びました。')).toBeInTheDocument()
   })
   it('moves a chosen tile with the arrow keys and moves focus without one', async () => {
     open('/missing-page')
