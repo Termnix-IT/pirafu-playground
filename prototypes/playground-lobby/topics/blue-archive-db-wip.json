@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "blue-archive-db-wip",
+  "kind": "in-development",
+  "title": "Blue Archive DB",
+  "banner": {
+    "path": "banners/blue-archive-db-wip.webp",
+    "alt": "「Blue Archive DB」の文字と、生徒名簿の画面。「育成状況も編成も、ブラウザだけで。」「開発中」の文字"
+  },
+  "link": {
+    "work": "blue-archive-db"
+  },
+  "order": 30
+}

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "lobby-prototype",
+  "kind": "notice",
+  "title": "新しいロビーの試作",
+  "banner": {
+    "path": "banners/lobby-prototype.webp",
+    "alt": "夕方の3D空間を背景に、「お知らせ」「新しいロビーを試作しています」の文字"
+  },
+  "link": {
+    "route": "updates"
+  },
+  "order": 40
+}

@@ -1,14 +1,27 @@
 {
   "name": "pirafu-playground-lobby-prototype",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
-  "description": "Stand-alone prototype of the Pirafu2411 Playground lobby: web UI over the 3D space of prototypes/playground-3d. Not part of the production build. Needs `npm ci` at the repository root and `npm install` in prototypes/playground-3d (three.js is resolved from there).",
+  "description": "Stand-alone prototype of the Pirafu2411 Playground lobby: web UI over a 3D room. Not part of the production build. Needs `npm ci` at the repository root (Vite, fonts, sharp, Playwright) and `npm install` here. See 運用手順.md.",
   "scripts": {
     "assets": "node scripts/prepare-lobby.mjs",
     "dev": "node scripts/prepare-lobby.mjs && vite --host 127.0.0.1 --port 5175 --strictPort",
     "build": "node scripts/prepare-lobby.mjs && vite build",
     "preview": "vite preview --host 127.0.0.1 --port 5176 --strictPort",
-    "capture": "node scripts/capture.mjs"
+    "topics": "node scripts/topics.mjs",
+    "stills": "node scripts/render-stills.mjs",
+    "banners": "node scripts/render-banners.mjs",
+    "check": "node scripts/check.mjs",
+    "capture": "node scripts/capture.mjs",
+    "measure": "node scripts/measure.mjs"
+  },
+  "dependencies": {
+    "three": "0.187.0"
+  },
+  "devDependencies": {
+    "@gltf-transform/core": "4.5.1",
+    "@gltf-transform/extensions": "4.5.1",
+    "@gltf-transform/functions": "4.5.1"
   }
 }

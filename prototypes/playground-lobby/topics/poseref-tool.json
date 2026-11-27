@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "poseref-tool",
+  "kind": "tool",
+  "title": "PoseRef",
+  "banner": {
+    "path": "banners/poseref-tool.webp",
+    "alt": "「PoseRef」の文字と、ポーズを付けたマネキンの3Dビュー。「マネキンを動かして、ポーズと構図の参考画像を作る。」の文字"
+  },
+  "link": {
+    "work": "poseref"
+  },
+  "order": 20
+}

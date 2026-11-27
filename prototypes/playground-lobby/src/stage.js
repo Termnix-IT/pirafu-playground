@@ -1,12 +1,21 @@
-// The 3D side of the lobby: sky, room, camera and the render loop.
-// The sky and the room come from prototypes/playground-3d unchanged, so work on that space shows up here as it is.
-// room.js (and with it the GLB) is imported only when the room is wanted; phones get the sky alone.
+// The 3D side of the lobby: sky, room, camera and the render loop. The web UI never waits for anything here.
+//
+// Loading: the sky's program is compiled in the background, then (if the room is wanted) the model is fetched
+// and its programs are compiled in the background too. Nothing is drawn before its programs are ready, because
+// a program that is compiled on first use blocks the whole page. The page shows a still image meanwhile, and
+// `onStatus('ready' | 'sky')` is sent only after a real frame of what was asked for has been drawn, so the
+// still can be swapped out without a gap.
+//
+// Drawing: the lobby is not an action game. At rest it draws 30 frames a second, which the slow clouds and
+// water do not show; while the camera or the pointer moves it draws 60. The size of the drawing buffer follows
+// a pixel budget per quality level and is independent of the web UI, which always stays at full resolution.
 import * as THREE from 'three'
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js'
-import { U, P, applyTime, createDome } from '../../playground-3d/src/sky.js'
+import { U, P, applyTime, createDome, setScene as setSkyScene } from './space/sky.js'
+import { roomFov } from './view.js'
 
 const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 
@@ -20,6 +29,15 @@ const BASE = {
   skyTall: { pos: new THREE.Vector3(0, 1.7, 0), look: new THREE.Vector3(0, -0.5, -10) },
 }
 
+// Per quality level: how many pixels may be shaded, multisampling, the glow of lamps, and frames per second
+// while something moves and at rest. What the room itself draws at each level is in space/room.js (QUALITY).
+const LEVELS = {
+  high: { pixels: 2.6e6, samples: 4, bloom: true, fps: [60, 30] },
+  standard: { pixels: 1.8e6, samples: 4, bloom: true, fps: [60, 30] },
+  low: { pixels: 1.1e6, samples: 0, bloom: false, fps: [30, 24] },
+}
+const STEP_DOWN = { high: 'standard', standard: 'low' }
+
 /**
  * @param {object} o
  * @param {HTMLCanvasElement} o.canvas
@@ -28,11 +46,15 @@ const BASE = {
  * @param {Record<string, HTMLElement>} o.tags small labels that follow the terminals on screen
  * @param {() => number} o.hour the hour to draw, 0-24
  * @param {() => boolean} o.reduced whether motion should be reduced right now
+ * @param {object | null} o.shoot set when a still is being photographed: { fov } fixes the view and lifts every limit
+ * @param {boolean} o.uncapped draw as often as the browser allows, to measure what a frame costs (scripts/measure.mjs)
  * @param {(key: string | null) => void} o.onHover
  * @param {(key: string) => void} o.onPick
- * @param {(status: 'sky' | 'loading' | 'ready' | 'failed') => void} o.onStatus
+ * @param {(status: 'loading' | 'sky' | 'ready' | 'failed' | 'lost', detail?: object) => void} o.onStatus
+ *   'loading' carries { step: 'sky' | 'download' | 'build', loaded, total }: bytes are reported only when they are known
+ * @param {(level: string) => void} o.onLevel the quality level in use changed
  */
-export function createStage({ canvas, terminals, order, tags, hour, reduced, onHover, onPick, onStatus }) {
+export function createStage({ canvas, terminals, order, tags, hour, reduced, shoot = null, uncapped = false, onHover, onPick, onStatus, onLevel }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' })
   renderer.outputColorSpace = THREE.SRGBColorSpace
   renderer.toneMapping = THREE.NeutralToneMapping
@@ -51,8 +73,8 @@ export function createStage({ canvas, terminals, order, tags, hour, reduced, onH
   composer.addPass(new OutputPass())
 
   // S.hover and S.sel are read by room.update() to brighten a terminal; S.scene and S.envDirty drive its sky light.
-  const S = { scene: 0, fog: 0, wantRoom: false, sel: null, hover: null, px: 0, py: 0, tx: 0, ty: 0, quality: 'high', qualityByUser: false, envDirty: false, sheet: 0, picking: true }
-  let room = null, roomPromise = null, failed = false
+  const S = { scene: 0, fog: 0, wantRoom: false, sel: null, hover: null, px: 0, py: 0, tx: 0, ty: 0, level: 'high', auto: true, envDirty: false, sheet: 0, picking: true }
+  let room = null, roomPromise = null
   let W = 1, H = 1
 
   const showsRoom = () => S.wantRoom && !!room
@@ -60,11 +82,14 @@ export function createStage({ canvas, terminals, order, tags, hour, reduced, onH
   const cur = { pos: BASE.sky.pos.clone(), look: BASE.sky.look.clone() }
   const from = { pos: new THREE.Vector3(), look: new THREE.Vector3() }
   const to = { pos: cur.pos.clone(), look: cur.look.clone() }
-  let pt = 1
+  let pt = 1, travel = 0.9
 
+  // A move always starts from where the camera is now, so choosing another area mid-flight bends the path
+  // instead of restarting it. Short hops take less time than the long way from the lobby view.
   function go(pos, look, instant) {
     from.pos.copy(cur.pos); from.look.copy(cur.look); to.pos.copy(pos); to.look.copy(look)
-    pt = reduced() || instant ? 1 : 0
+    travel = THREE.MathUtils.clamp(0.55 + from.pos.distanceTo(pos) * 0.045, 0.6, 1.0)
+    pt = reduced() || instant || shoot ? 1 : 0
   }
 
   // Frames one terminal in the part of the screen that the sheet (docked on the right) leaves free.
@@ -84,104 +109,112 @@ export function createStage({ canvas, terminals, order, tags, hour, reduced, onH
     go(pos, look, instant)
   }
 
+  // ---------------------------------------------------------------- status
+  // skyLive / roomLive: the programs of that part are compiled. compiling: a compile is running, so nothing may
+  // be drawn. shown: a frame of what is wanted now has reached the screen.
+  let skyLive = false, roomLive = false, compiling = 0, failed = false, lost = false, shown = false, paused = false
+  let progress = { step: 'sky', loaded: 0, total: 0 }
+  const drawable = () => !compiling && !lost && (S.wantRoom && !failed ? roomLive : skyLive)
+  function report() {
+    if (lost) onStatus('lost')
+    else if (S.wantRoom && failed) onStatus('failed')
+    else if (!drawable() || !shown) onStatus('loading', progress)
+    else onStatus(S.wantRoom ? 'ready' : 'sky')
+  }
+
   // ---------------------------------------------------------------- compiling without freezing the page
-  // A browser that has never drawn this space (no shader cache yet) needs tens of seconds on Windows to compile
-  // the sky's shader and the room's materials. Drawn straight away, that compile blocks the whole page, UI
-  // included. So nothing is drawn until its programs are ready: they are compiled in the background
-  // (KHR_parallel_shader_compile), for the render target the composer draws into, while the UI stays usable.
-  let live = false, skyLive = false, roomLive = false
-  // 'loading' until what was asked for can be drawn; then 'ready' (the room) or 'sky' (the sky alone); 'failed' if the room could not be loaded
-  function report() { onStatus(!skyLive || (S.wantRoom && !roomLive && !failed) ? 'loading' : S.wantRoom && failed ? 'failed' : S.wantRoom ? 'ready' : 'sky') }
-  const mirrorPlane = [new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)], noPlanes = [], nothing = new THREE.Scene()
+  // Programs are compiled for the render target the composer draws into: the same material gets a different
+  // program when it is drawn straight to the canvas.
   async function warm() {
+    compiling++
     renderer.setRenderTarget(composer.renderTarget1)
-    const main = renderer.compileAsync(scene, camera)
+    const done = renderer.compileAsync(scene, camera)
     renderer.setRenderTarget(null)
-    await main
-    if (!room) return
-    // The floor's reflection draws the room through one clipping plane, which makes a second set of programs.
-    // Drawing an empty scene with that plane leaves the renderer in the same state, so compile() builds them.
-    renderer.setRenderTarget(composer.renderTarget1)
-    renderer.clippingPlanes = mirrorPlane
-    renderer.render(nothing, camera)
-    const mirrored = renderer.compileAsync(scene, camera)
-    renderer.clippingPlanes = noPlanes
-    renderer.render(nothing, camera)
-    renderer.setRenderTarget(null)
-    await mirrored
+    try { await done } finally { compiling-- }
   }
 
   function ensureRoom() {
     if (roomPromise) return roomPromise
+    progress = { step: 'download', loaded: 0, total: 0 }
     roomPromise = Promise.all([
-      import('../../playground-3d/src/room.js').then((m) => m.createRoom({ renderer, scene, camera, works: terminals, order })),
+      import('./space/room.js').then((m) => m.createRoom({
+        renderer, scene, camera, works: terminals, order,
+        onProgress(loaded, total) { if (!room) { progress = { step: 'download', loaded, total }; report() } },
+      })),
       skyWarm,
     ]).then(async ([r]) => {
       room = r
-      live = false                  // the sky holds its last frame while the room's programs compile
+      progress = { step: 'build', loaded: 0, total: 0 }
+      report()
       room.group.visible = true
-      applyQuality()
+      applyLevel()
       room.forceEnv()               // lights and sky light first, so the programs are built for the state they are drawn in
       room.update(0, S)
       await warm()
       room.group.visible = S.wantRoom
-      applyQuality()
+      applyLevel()
       aim(true)
-      live = true
       roomLive = true
-      report()
+      shown = false
+      wake(3000)                    // long enough for the automatic quality check to see how this machine draws
       return r
-    }).catch((err) => { console.error(err); failed = true; live = skyLive; report() })
+    }).catch((err) => { console.error(err); failed = true; roomPromise = null; shown = false; wake(); report() })
     return roomPromise
   }
 
   function resize() {
     W = innerWidth; H = innerHeight
+    const level = LEVELS[S.level]
     // cap the number of shaded pixels rather than the ratio, so large or dense displays do not multiply the cost
-    const budget = !showsRoom() ? 1.6e6 : (S.quality === 'high' ? 2.6e6 : 1.4e6)
-    const pr = Math.max(0.75, Math.min(devicePixelRatio || 1, Math.sqrt(budget / (W * H)), 2))
+    const budget = showsRoom() ? level.pixels : 1.6e6
+    const pr = shoot ? 1 : Math.max(0.6, Math.min(devicePixelRatio || 1, Math.sqrt(budget / (W * H)), 2))
     renderer.setPixelRatio(pr); renderer.setSize(W, H, false)
     composer.setPixelRatio(pr); composer.setSize(W, H)
     const a = W / H
     camera.aspect = a
-    if (!showsRoom()) camera.fov = a < 1 ? 64 : 52
-    else camera.fov = Math.max(40, Math.min(78, 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(33)) / a) * 180 / Math.PI))
+    if (shoot) camera.fov = shoot.fov
+    else if (!showsRoom()) camera.fov = a < 1 ? 64 : 52
+    else camera.fov = roomFov(a)
     camera.updateProjectionMatrix()
     if (room) { const db = renderer.getDrawingBufferSize(new THREE.Vector2()); room.setSize(db.x, db.y) }
   }
-  addEventListener('resize', () => { resize(); aim(true) })
+  addEventListener('resize', () => { resize(); aim(true); wake() })
 
-  function applyQuality() {
-    const high = S.quality === 'high' && showsRoom()
-    bloom.enabled = high
-    for (const rt of [composer.renderTarget1, composer.renderTarget2]) { if (rt.samples !== (high ? 4 : 0)) { rt.samples = high ? 4 : 0; rt.dispose() } }
-    if (room) room.setQuality(S.quality)
+  function applyLevel() {
+    const level = LEVELS[S.level]
+    const on = showsRoom()
+    bloom.enabled = on && level.bloom
+    const samples = on ? level.samples : 0
+    for (const rt of [composer.renderTarget1, composer.renderTarget2]) { if (rt.samples !== samples) { rt.samples = samples; rt.dispose() } }
+    if (room) room.setQuality(S.level)
     resize()
   }
 
   // ---------------------------------------------------------------- window view: the glass fogs, then clears on another scene
   let fogAnim = null
-  function applyScene(i) { S.scene = i; U.uScene.value = i; S.envDirty = true }
+  function applyScene(i) { S.scene = i; setSkyScene(i); S.envDirty = true }
   function setScene(i, instant) {
     if (i === S.scene && !fogAnim) return
-    if (reduced() || instant) { fogAnim = null; S.fog = 0; applyScene(i); return }
+    if (reduced() || instant || !shown) { fogAnim = null; S.fog = 0; applyScene(i); wake(); return }
     fogAnim = { t: 0, to: i, done: false }
+    wake()
   }
 
   // ---------------------------------------------------------------- pointer
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2()
   let down = null
   function pick(e) {
-    if (!showsRoom() || !S.picking) return null
+    if (!showsRoom() || !S.picking || !shown) return null
     const r = canvas.getBoundingClientRect()
     ndc.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height * 2 - 1))
     ray.setFromCamera(ndc, camera)
     const h = ray.intersectObjects(room.hits, false)
     return h.length ? h[0].object.userData.term : null
   }
-  function hover(k) { if (S.hover === k) return; S.hover = k; canvas.style.cursor = k ? 'pointer' : ''; onHover(k) }
+  function hover(k) { if (S.hover === k) return; S.hover = k; canvas.style.cursor = k ? 'pointer' : ''; onHover(k); wake() }
   canvas.addEventListener('pointermove', (e) => {
     S.tx = e.clientX / innerWidth * 2 - 1; S.ty = e.clientY / innerHeight * 2 - 1
+    wake()
     if (e.pointerType === 'mouse') hover(pick(e))
   })
   canvas.addEventListener('pointerleave', () => hover(null))
@@ -194,19 +227,38 @@ export function createStage({ canvas, terminals, order, tags, hour, reduced, onH
     if (k) onPick(k)
   })
 
+  // ---------------------------------------------------------------- losing the graphics context
+  canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); lost = true; shown = false; report() })
+  canvas.addEventListener('webglcontextrestored', () => {
+    // three.js rebuilds its own state; the programs are compiled again before drawing resumes
+    lost = false
+    warm().then(() => wake())
+    report()
+  })
+
   // ---------------------------------------------------------------- loop
   const v3 = new THREE.Vector3()
-  let frame = 0, last = performance.now(), probe = { n: 0, t: 0 }, perf = { acc: 0, n: 0, ms: 0 }
+  let frame = 0, last = performance.now(), lastDraw = 0, activeUntil = 0
+  const perf = { drawn: 0, since: performance.now(), perSecond: 0 }
+  // the automatic choice: a slow run of frames while the lobby is asking for 60 a second steps the level down once
+  const probe = { n: 0, slow: 0, settle: 0 }
+  /** Asks for full-rate drawing for a moment: something on screen is about to change. */
+  function wake(ms = 1200) { activeUntil = Math.max(activeUntil, performance.now() + ms) }
+
   function tick(now) {
     requestAnimationFrame(tick)
+    if (paused || !drawable() || document.hidden) { last = now; return }
+    const level = LEVELS[S.level]
+    const moving = pt < 1 || !!fogAnim || now < activeUntil
+    const target = shoot || uncapped ? 1000 : level.fps[moving ? 0 : 1]
+    if (now - lastDraw < 1000 / target - 3) return
     const dt = Math.min(Math.max(0, (now - last) / 1000), 0.1)
     last = now
+    const sinceDraw = now - lastDraw
+    lastDraw = now
     U.uTime.value += dt; frame++
-    perf.acc += dt; perf.n++
-    if (perf.n === 30) { perf.ms = perf.acc / perf.n * 1000; perf.acc = 0; perf.n = 0 }
     applyTime(hour())
     renderer.toneMappingExposure = P.exp
-    if (!live) return
     if (fogAnim) {
       fogAnim.t += dt
       const a = fogAnim.t
@@ -218,11 +270,12 @@ export function createStage({ canvas, terminals, order, tags, hour, reduced, onH
       }
     }
     U.uFog.value = S.fog
-    if (pt < 1) pt = Math.min(1, pt + dt / 1.05)
+    if (pt < 1) pt = Math.min(1, pt + dt / travel)
     const e = ease(pt)
     cur.pos.lerpVectors(from.pos, to.pos, e); cur.look.lerpVectors(from.look, to.look, e)
     S.px += (S.tx - S.px) * Math.min(1, dt * 2.5); S.py += (S.ty - S.py) * Math.min(1, dt * 2.5)
-    const par = reduced() ? 0 : (showsRoom() ? (S.sel ? 0.25 : 1) : 0.25)
+    if (Math.abs(S.tx - S.px) + Math.abs(S.ty - S.py) > 0.004) wake(300)
+    const par = reduced() || shoot ? 0 : (showsRoom() ? (S.sel ? 0.25 : 1) : 0.25)
     camera.position.copy(cur.pos); camera.position.x += S.px * 0.42 * par; camera.position.y -= S.py * 0.15 * par
     camera.lookAt(cur.look)
     camera.updateMatrixWorld()
@@ -238,46 +291,69 @@ export function createStage({ canvas, terminals, order, tags, hour, reduced, onH
         v3.set(t.center.x, t.center.y + t.sh * 0.5 + 0.2, t.center.z).project(camera)   // just above the screen
         el.style.transform = `translate(-50%,-100%) translate(${((v3.x * 0.5 + 0.5) * W).toFixed(1)}px,${((-v3.y * 0.5 + 0.5) * H).toFixed(1)}px)`
       }
-      // the floor's reflection is redrawn every frame while the camera moves, every other frame at rest
-      const moving = pt < 1 || Math.abs(S.tx - S.px) + Math.abs(S.ty - S.py) > 0.004 || fogAnim
+      // the floor's reflection is redrawn every frame while something moves, every other frame at rest
       if (moving || frame % 2 === 0) room.renderReflection(cur.look)
-      // drop to the light settings once if this machine cannot hold the full ones
-      if (!S.qualityByUser && S.quality === 'high' && document.visibilityState === 'visible') {
-        probe.n++
-        if (probe.n > 45) probe.t += dt
-        if (probe.n === 165) { if (probe.t / 120 > 0.03) { S.quality = 'low'; applyQuality(); stage.onAutoQuality?.('low') } probe.n = 1e9 }
+      // Automatic quality: only while 60 frames a second are being asked for, and not in the first moments
+      // after a change. A second of mostly slow frames steps down one level. It never steps back up by itself,
+      // so the level cannot flicker between two settings.
+      if (S.auto && !shoot && !uncapped && moving && STEP_DOWN[S.level]) {
+        if (probe.settle < 40) probe.settle++
+        else { probe.n++; if (sinceDraw > 24) probe.slow++ }
+        if (probe.n >= 60) {
+          if (probe.slow > 36) { S.level = STEP_DOWN[S.level]; applyLevel(); onLevel?.(S.level); probe.settle = 0 }
+          probe.n = 0; probe.slow = 0
+        }
       }
     }
     composer.render(dt)
+    perf.drawn++
+    if (now - perf.since >= 1000) { perf.perSecond = Math.round(perf.drawn * 1000 / (now - perf.since)); perf.drawn = 0; perf.since = now }
+    if (!shown) { shown = true; report() }
   }
 
   const stage = {
     /** Shows the room (downloading it on first use) or the sky alone. */
     setRoom(want) {
+      if (want !== S.wantRoom) shown = false
       S.wantRoom = want
-      if (want && !failed) ensureRoom()
       if (room) room.group.visible = want
-      report()
-      applyQuality()
+      if (want && !failed) ensureRoom()
+      applyLevel()
       aim(true)
+      wake()
+      report()
     },
+    /** Tries the room again after a failed load. */
+    retry() { if (!failed) return; failed = false; shown = false; stage.setRoom(S.wantRoom) },
     /** Moves the camera to a terminal, or back to the lobby view with null. */
-    focus(key, instant) { S.sel = key; aim(instant) },
+    focus(key, instant) { if (S.sel === key && !instant) return; S.sel = key; aim(instant); wake() },
     /** Width in px that the docked sheet covers on the right, so the terminal is framed beside it. */
-    setSheet(px) { if (px === S.sheet) return; S.sheet = px; aim(pt >= 1 && !S.sel) },
+    setSheet(px) { if (px === S.sheet) return; S.sheet = px; if (S.sel) aim(pt >= 1) },
+    /** Shows a work's image on a terminal's screen. Does nothing until the room exists. */
+    setScreen(key, src) { room?.setScreen(key, src); wake() },
     setScene,
-    setQuality(q, byUser) { S.quality = q; if (byUser) S.qualityByUser = true; applyQuality() },
+    /** 'auto' starts at the best level (or at start, the level it settled on earlier in this session) and steps down if this machine cannot keep up; any other level is kept as chosen. */
+    setQuality(level, start = null) {
+      S.auto = level === 'auto'
+      S.level = S.auto ? (LEVELS[start] ? start : 'high') : level
+      probe.n = probe.slow = probe.settle = 0
+      applyLevel()
+      wake(3000)
+      onLevel?.(S.level)
+    },
+    /** Stops drawing altogether (the still-image mode), or resumes it. The loaded space is kept, so coming back is immediate. */
+    pause(on) { paused = on; if (!on) wake() },
     /** Terminals react to the pointer only in the lobby view. */
     setPicking(on) { S.picking = on; if (!on) hover(null) },
-    get quality() { return S.quality },
-    get frameMs() { return perf.ms },
-    onAutoQuality: null,
-    debug: { THREE, renderer, scene, camera, S, U, P, get room() { return room } },
+    wake,
+    get level() { return S.level },
+    debug: { THREE, renderer, scene, camera, S, U, P, get room() { return room }, get drawnPerSecond() { return perf.perSecond } },
   }
-  U.uScene.value = S.scene
+  setSkyScene(S.scene)
   resize()
   applyTime(hour())
-  const skyWarm = warm().then(() => { live = true; skyLive = true; canvas.classList.add('is-live'); report() })
+  const skyWarm = warm().then(() => { skyLive = true; wake() })
+  report()
   requestAnimationFrame(tick)
   return stage
 }

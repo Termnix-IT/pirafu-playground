@@ -13,6 +13,10 @@ const PATHS = {
   water: '<path d="M3 9c2-2 4-2 6 0s4 2 6 0 4-2 6 0M3 15c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>',
   out: '<path d="M7.5 16.5l9-9M9.5 7.5h7v7"/>',
   close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
+  pause: '<path d="M8.5 6v12M15.5 6v12"/>',
+  play: '<path d="M8.5 6l9.5 6-9.5 6z"/>',
+  updates: '<path d="M5.5 4.5h13v15h-13zM8.5 9h7M8.5 12.5h7M8.5 16h4"/>',
+  retry: '<path d="M5.5 12a6.5 6.5 0 1 0 2-4.7M5.5 5v3.5H9"/>',
   prev: '<path d="M14 6.5L8.5 12l5.5 5.5"/>',
   next: '<path d="M10 6.5l5.5 5.5-5.5 5.5"/>',
 }

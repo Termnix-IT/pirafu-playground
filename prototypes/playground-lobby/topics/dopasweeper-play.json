@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "dopasweeper-play",
+  "kind": "game",
+  "title": "DOPASWEEPER",
+  "banner": {
+    "path": "banners/dopasweeper-play.webp",
+    "alt": "DOPASWEEPERのロゴ。「ミニゲーム」「60秒で、どこまで開けるか。」の文字と、半分開いたマインスイーパーの盤面"
+  },
+  "link": {
+    "work": "dopasweeper"
+  },
+  "order": 10
+}

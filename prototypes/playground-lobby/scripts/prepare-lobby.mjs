@@ -1,12 +1,13 @@
 // Writes everything the lobby shows, from the portal's own data:
-//   public/assets/lobby.json           works, latest updates and counts
+//   public/assets/lobby.json           works, topics, updates and counts
 //   public/assets/media/<id>/...       the works' key visuals, as the portal publishes them
-//   public/assets/playground.glb, ao_*.webp   the 3D space, copied from prototypes/playground-3d
+//   public/assets/topics/<id>.webp     the banners of the topics (topics/<id>.json), in two sizes
+//   public/assets/space.glb, ao_*.webp the 3D space: a smaller web copy of the model built in prototypes/playground-3d
 // Works come through the portal's validateCatalog(), so hidden records never reach the lobby, and updates come
 // from src/data/changelog.ts. Nothing here is written by hand: no invented versions, dates or works.
 // usage: node scripts/prepare-lobby.mjs      (run from prototypes/playground-lobby)
 import { createRequire } from 'node:module'
-import { copyFile, mkdir, rm, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -18,6 +19,8 @@ const require = createRequire(path.join(repoRoot, 'package.json'))
 const sharp = require('sharp')
 const { validateCatalog } = await import(pathToFileURL(path.join(repoRoot, 'scripts', 'catalog.mjs')))
 const { changelog, changelogText } = await import(pathToFileURL(path.join(repoRoot, 'src', 'data', 'changelog.ts')))
+const { KIND_LABEL, loadTopics, stateAt, topicsDir } = await import('./topics-lib.mjs')
+const { optimizeSpace } = await import('./optimize-space.mjs')
 
 // Which lobby area shows each category of the data contract (contracts/v1: apps, games, tools, other).
 // The contract has nothing that means "experiment" or "media" yet, so Lab and Media stay empty: a work is not
@@ -113,18 +116,50 @@ const counts = catalog.categories
   .map(({ id, label }) => ({ label, count: listed.filter((project) => project.category === id).length }))
   .filter(({ count }) => count > 0)
 
-await writeFile(path.join(assets, 'lobby.json'), `${JSON.stringify({ works, updates, counts }, null, 2)}\n`)
-await copyFile(path.join(repoRoot, 'public', 'favicon.svg'), path.join(assets, 'favicon.svg'))
-console.log(`lobby.json: ${works.length} works, ${updates.length} updates`)
-
-// The 3D space is built in prototypes/playground-3d (see its 制作手順.md). Without it the lobby shows the sky only.
-let copied = 0
-for (const name of ['playground.glb', 'ao_room.webp', 'ao_terms.webp', 'ao_floor.webp']) {
-  try {
-    await copyFile(path.join(space, name), path.join(assets, name))
-    copied += 1
-  } catch {
-    console.warn(`missing ${name}: build the 3D space in prototypes/playground-3d first`)
-  }
+// Topics: checked here so that a broken record stops the build instead of showing a broken banner. A topic that
+// has already ended, or is switched off, is left out; one that starts later is kept, and the lobby shows it
+// from its "from" instant by the visitor's clock.
+const { topics: topicRecords, problems } = await loadTopics(new Set(works.map(({ id }) => id)))
+if (problems.length) {
+  for (const problem of problems) console.error('topic problem:', problem)
+  throw new Error('Fix the topics above (node scripts/topics.mjs check).')
 }
-console.log(`3D space: ${copied} of 4 files copied`)
+await rm(path.join(assets, 'topics'), { recursive: true, force: true })
+await mkdir(path.join(assets, 'topics'), { recursive: true })
+const topics = []
+for (const topic of topicRecords) {
+  if (stateAt(topic) === 'off' || stateAt(topic) === 'ended') continue
+  const source = path.join(topicsDir, topic.banner.path)
+  await sharp(source).resize(1260, 540, { fit: 'cover' }).webp({ quality: 82 }).toFile(path.join(assets, 'topics', `${topic.id}.webp`))
+  await sharp(source).resize(630, 270, { fit: 'cover' }).webp({ quality: 80 }).toFile(path.join(assets, 'topics', `${topic.id}-630.webp`))
+  const { link } = topic
+  topics.push({
+    id: topic.id,
+    kind: KIND_LABEL[topic.kind],
+    title: topic.title,
+    alt: topic.banner.alt,
+    image: `assets/topics/${topic.id}.webp`,
+    imageSmall: `assets/topics/${topic.id}-630.webp`,
+    href: link.work ? `#/${areaOf[link.work]}/${link.work}` : link.route ? `#/${link.route}` : link.url,
+    external: Boolean(link.url),
+    ...(topic.from ? { from: topic.from } : {}),
+    ...(topic.until ? { until: topic.until } : {}),
+  })
+}
+
+// Stills of the room (scripts/render-stills.mjs). The lobby is told which exist, so it never asks for a missing one.
+const stills = (await readdir(path.join(assets, 'stills')).catch(() => [])).filter((name) => /^[a-z]+-[a-z]+\.webp$/.test(name)).map((name) => name.replace('.webp', ''))
+
+await writeFile(path.join(assets, 'lobby.json'), `${JSON.stringify({ works, topics, updates, counts, stills }, null, 2)}\n`)
+await copyFile(path.join(repoRoot, 'public', 'favicon.svg'), path.join(assets, 'favicon.svg'))
+console.log(`lobby.json: ${works.length} works, ${topics.length} topics, ${updates.length} updates, ${stills.length} stills`)
+
+// The 3D space is built in prototypes/playground-3d (see its 制作手順.md). Without it the lobby shows a still or the sky only.
+const modelSource = path.join(space, 'playground.glb'), modelTarget = path.join(assets, 'space.glb')
+const age = async (file) => (await stat(file).catch(() => null))?.mtimeMs ?? 0
+if (!(await age(modelSource))) console.warn('missing playground.glb: build the 3D space in prototypes/playground-3d first')
+else if ((await age(modelTarget)) < (await age(modelSource))) await optimizeSpace(modelSource, modelTarget)
+await rm(path.join(assets, 'playground.glb'), { force: true })   // the uncompressed copy of earlier versions
+for (const name of ['ao_room.webp', 'ao_terms.webp', 'ao_floor.webp']) {
+  await copyFile(path.join(space, name), path.join(assets, name)).catch(() => console.warn(`missing ${name}: build the 3D space in prototypes/playground-3d first`))
+}
