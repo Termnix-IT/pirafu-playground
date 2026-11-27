@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--", "--port", "5173", "--strictPort"],
       "port": 5173
+    },
+    {
+      "name": "space-prototype",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "prototypes/playground-3d", "run", "dev"],
+      "port": 5174
     }
   ]
 }

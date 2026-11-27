@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <title>Pirafu2411 Playground 空間試作 3</title>
+</head>
+<body>
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div class="ui" id="ui">
+    <h1 class="sr">Pirafu2411 Playground の空間試作</h1>
+    <div id="labels"></div>
+    <p class="caption"><span class="cap-name">Pirafu2411 Playground</span><span class="cap-sub" id="capSub">空間を読み込んでいます</span></p>
+    <div class="right-bottom">
+      <div class="marks" role="group" aria-label="窓の外の景色" id="marks"></div>
+      <button class="textlink" id="listBtn" type="button">一覧で見る</button>
+    </div>
+    <section class="panel" id="panel" hidden aria-live="polite"></section>
+    <section class="listview" id="listview" hidden></section>
+    <div class="phone" id="phone" hidden>
+      <div class="ph-frame" id="phFrame">
+        <div class="ph-status"><span id="phPhase">昼</span><span class="ph-lamps" id="phLamps" role="img" aria-label="灯っている端末 3 / 4"></span></div>
+        <div class="ph-clock"><div class="ph-time" id="phTime">12:00</div><div class="ph-date" id="phDate"></div><div class="ph-name">Pirafu2411 Playground</div></div>
+        <div class="ph-apps" id="phApps"></div>
+        <div class="ph-dock" role="group" aria-label="壁紙の景色" id="phDock"></div>
+        <div class="ph-app" id="phApp" hidden></div>
+      </div>
+    </div>
+    <details class="mock" id="mock">
+      <summary>試作の操作</summary>
+      <div class="mock-body">
+        <div class="mock-row mode-row"><span>表示</span><div class="seg" id="modeSeg"><button type="button" data-m="pc" aria-pressed="true">PC</button><button type="button" data-m="phone" aria-pressed="false">スマホ</button></div></div>
+        <div class="mock-row"><span>時刻</span><input id="timeRange" type="range" min="0" max="24" step="0.05" value="12" aria-label="時刻"><output id="timeOut" for="timeRange">12:00</output></div>
+        <div class="mock-row"><button class="small" id="nowBtn" type="button">いまの時刻に合わせる</button></div>
+        <div class="mock-row"><span>画質</span><div class="seg" id="qualitySeg"><button type="button" data-q="high" aria-pressed="true">高</button><button type="button" data-q="low" aria-pressed="false">軽量</button></div></div>
+        <p id="perf">計測中</p>
+        <p>ここにあるのは確認用の操作で、実際のサイトには置きません。端末を選ぶと近づきます。窓の外をクリックすると、ガラスが曇って景色が変わります。</p>
+      </div>
+    </details>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
