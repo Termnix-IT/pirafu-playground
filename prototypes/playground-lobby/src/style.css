@@ -1,0 +1,248 @@
+/* The lobby's web UI. The 3D room behind it is soft, organic and full of light; the UI is the opposite on
+   purpose: straight edges, diagonal cuts, hairlines, flat fills. Every slab grows out of an edge of the screen
+   (the title bar from the top, the dock from the bottom, the featured work from the left, updates and sheets
+   from the right), which leaves the middle of the room free to look at.
+   Nothing here blurs, glows or casts a shadow. A slab is told apart from the room by tone alone: one blue-grey
+   that is darker than the daytime sky and lighter than the night, shifted a little with the time of day
+   (main.js sets data-phase). */
+:root {
+  --ui: 48 76 118; --ui-a: .9;
+  --ink: #f5f9fd; --ink-soft: #d3deed;
+  --edge: rgb(255 255 255 / .4); --rule: rgb(255 255 255 / .18); --wash: rgb(255 255 255 / .1);
+  --accent: #b9e7ff; --paper: #f2f7fc; --paper-ink: #15304e;
+  --bar-h: 38px; --dock-h: 62px;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --font-display: 'Sora', 'Zen Kaku Gothic New', system-ui, sans-serif;
+  --font-body: 'Zen Kaku Gothic New', 'Sora', system-ui, 'Hiragino Sans', 'Yu Gothic UI', sans-serif;
+  --surface: rgb(var(--ui) / var(--ui-a));
+  color-scheme: dark;
+}
+:root[data-phase="morning"] { --ui: 54 82 122 }
+:root[data-phase="evening"] { --ui: 58 66 116; --accent: #ffd9c2 }
+:root[data-phase="night"] { --ui: 58 80 128; --edge: rgb(206 224 255 / .42) }
+:root[data-opaque] { --ui-a: 1 }
+
+html, body { height: 100%; margin: 0 }
+[hidden] { display: none !important }
+:root { --sky: linear-gradient(#2f79d0, #a9d3f5 62%, #e4eff8) }
+:root[data-phase="morning"] { --sky: linear-gradient(#3f7fd0, #cfe6f8 60%, #f4ece6) }
+:root[data-phase="evening"] { --sky: linear-gradient(#4a5eae, #e7a79c 58%, #f6cdb4) }
+:root[data-phase="night"] { --sky: linear-gradient(#060d26, #172a58 64%, #22386c) }
+body { background: var(--sky); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.6; overflow: hidden; -webkit-text-size-adjust: 100% }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer }
+a { color: inherit }
+h1, h2, h3, p { margin: 0 }
+:focus-visible { outline: 2px solid #fff; outline-offset: 2px }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap }
+.icon { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: square; stroke-linejoin: miter; flex: none }
+
+/* until the sky's shader is compiled the canvas stays clear, and the page shows a plain sky of the same hour */
+#gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: manipulation; opacity: 0; transition: opacity 1.4s ease }
+#gl.is-live { opacity: 1 }
+.ui { position: fixed; inset: 0; pointer-events: none }
+.ui > * { pointer-events: auto }
+
+/* outline drawn by frame.js */
+.frame { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: -1 }
+.frame polygon { fill: var(--surface); stroke: var(--edge); stroke-width: 1 }
+
+/* ---------------------------------------------------------------- title bar */
+.bar { position: absolute; inset: 0 0 auto; box-sizing: border-box; height: calc(var(--bar-h) + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) max(18px, env(safe-area-inset-right, 0px)) 0 max(14px, env(safe-area-inset-left, 0px));
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; background: var(--surface); border-bottom: 1px solid var(--edge); white-space: nowrap }
+.bar-brand { display: flex; align-items: center; gap: 10px; min-width: 0; font: 500 15px/1 var(--font-display); letter-spacing: .02em }
+.mark { display: grid; place-items: center }
+.mark-svg { fill: currentColor; display: block }
+.bar-name { overflow: hidden; text-overflow: ellipsis }
+.bar-sub { padding-left: 12px; border-left: 1px solid var(--rule); font-size: 10.5px; font-weight: 400; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft) }
+.bar-env { display: flex; align-items: center; gap: 14px; font-family: var(--font-display); font-variant-numeric: tabular-nums }
+.bar-date { font: 400 11.5px/1 var(--font-body); color: var(--ink-soft) }
+.bar-time { font-size: 13px; font-weight: 500; letter-spacing: .04em }
+.bar-sky { display: flex; align-items: center; gap: 6px; padding-left: 14px; border-left: 1px solid var(--rule); font: 500 14.5px/1 var(--font-body) }
+.bar-phase { padding-left: 7px; border-left: 1px solid var(--rule); color: var(--ink-soft) }
+
+/* ---------------------------------------------------------------- labels that stand outside the cards */
+.eyebrow { position: relative; isolation: isolate; --cut: 13px; display: flex; align-items: center; height: 24px; font: 600 10.5px/1 var(--font-display); letter-spacing: .24em; text-transform: uppercase }
+.featured .eyebrow { padding: 0 28px 0 max(22px, env(safe-area-inset-left, 0px)) }
+.updates .eyebrow { padding: 0 max(20px, env(safe-area-inset-right, 0px)) 0 28px }
+
+/* ---------------------------------------------------------------- lobby */
+.lobby { position: absolute; inset: var(--bar-h) 0 var(--dock-h); pointer-events: none }
+.lobby > * { pointer-events: auto }
+.featured { position: absolute; left: 0; top: 36px; width: clamp(380px, 30vw, 440px); display: flex; flex-direction: column; align-items: flex-start; gap: 9px }
+.feat-card { position: relative; isolation: isolate; --cut: 22px; width: 100%; display: grid; grid-template-columns: 43% 1fr }
+.feat-card .btn { padding-inline: 12px }
+.feat-card .btn.primary { padding-right: 14px }
+/* the key visual keeps the work's own colours: nothing is tinted to match the UI */
+.feat-visual { display: block; box-sizing: border-box; width: 100%; height: 100%; aspect-ratio: 16 / 10; object-fit: cover; padding-block: 1px; border-right: 1px solid var(--edge) }
+.feat-body { min-width: 0; padding: 14px 24px 16px 18px; display: flex; flex-direction: column; justify-content: center; gap: 5px }
+.feat-title { font: 500 20px/1.25 var(--font-display); letter-spacing: .01em; overflow-wrap: anywhere }
+.meta { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 12px; color: var(--ink-soft) }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px }
+.note { font-size: 12px; color: var(--ink-soft) }
+.btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 0 14px; border: 1px solid var(--edge); font-size: 13px; line-height: 1; text-decoration: none; white-space: nowrap; transition: background-color .15s }
+.btn:hover { background: var(--wash) }
+.btn.primary { padding-right: 16px; border-color: transparent; background: var(--paper); color: var(--paper-ink); font-weight: 500; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%) }
+.btn.primary:hover { background: #fff }
+.btn.primary:focus-visible { outline-offset: -4px; outline-color: var(--paper-ink) }
+.feat-pager { display: flex; align-items: center; gap: 4px; margin-left: 14px; font: 400 11px/1 var(--font-display); letter-spacing: .1em; background: var(--surface); border: 1px solid var(--edge) }
+.feat-pager button { width: 32px; height: 28px; display: grid; place-items: center }
+.feat-pager button:hover { background: var(--wash) }
+
+.updates { position: absolute; right: 0; top: 36px; width: clamp(252px, 21vw, 304px); display: flex; flex-direction: column; align-items: flex-end; gap: 9px }
+.upd-slab { position: relative; isolation: isolate; --cut: 18px; box-sizing: border-box; width: 100%; padding: 6px max(18px, env(safe-area-inset-right, 0px)) 12px 22px }
+.upd-list { list-style: none; margin: 0; padding: 0 }
+.upd-list li { display: grid; grid-template-columns: 42px 1fr; align-items: baseline; gap: 10px; padding: 7px 0 6px; border-bottom: 1px solid var(--rule); font-size: 12.5px; line-height: 1.5 }
+.upd-list time { font: 400 11px/1 var(--font-display); letter-spacing: .04em; color: var(--ink-soft); font-variant-numeric: tabular-nums }
+.upd-list a, .more, .link-list a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: var(--edge) }
+.upd-list a:hover, .more:hover, .link-list a:hover { text-decoration-color: currentColor }
+.upd-list.long li { grid-template-columns: 78px 1fr; font-size: 13.5px; padding: 9px 0 8px }
+.more { display: inline-block; margin-top: 9px; font-size: 12px }
+
+/* ---------------------------------------------------------------- dock: one slab that rises from the bottom edge */
+.dock { position: absolute; left: 0; right: 0; bottom: 0; margin-inline: auto; isolation: isolate; --cut: 30px; width: min(880px, calc(100% - 128px)); height: calc(var(--dock-h) + env(safe-area-inset-bottom, 0px)) }
+.dock-list { list-style: none; margin: 0; padding: 0 36px; height: var(--dock-h); display: grid; grid-template-columns: repeat(6, 1fr) }
+.dock-list li { position: relative }
+.dock-list li + li::before { content: ""; position: absolute; left: 0; top: 50%; height: 24px; margin-top: -12px; border-left: 1px solid var(--rule) }
+.dock-list a { position: relative; height: 100%; display: flex; align-items: center; justify-content: center; gap: 11px; text-decoration: none; color: var(--ink-soft); transition: background-color .15s, color .15s }
+.dock-text { display: flex; flex-direction: column; gap: 5px; min-width: 0 }
+.dock-en { font: 500 14px/1 var(--font-display); letter-spacing: .05em; color: var(--ink) }
+.dock-ja { font-size: 10.5px; line-height: 1; white-space: nowrap }
+.dock-list a:hover { background: var(--wash); color: var(--ink) }
+.dock-list a:focus-visible { outline-offset: -4px }
+/* the selected entry is marked by a line on the slab's top edge and a brighter icon, never by a heavier weight */
+.dock-list a::after { content: ""; position: absolute; left: 50%; top: 0; width: 0; height: 2px; background: var(--accent); transition: width .3s var(--ease), left .3s var(--ease) }
+.dock-list a[aria-current]::after { left: 14px; width: calc(100% - 28px) }
+.dock-list a[aria-current] { color: var(--accent); background: var(--wash) }
+
+/* ---------------------------------------------------------------- sheets: areas, profile and settings */
+.sheet { position: absolute; top: var(--bar-h); right: 0; bottom: calc(var(--dock-h) + 24px); width: clamp(392px, 33vw, 480px); isolation: isolate; --cut: 28px;
+  display: flex; flex-direction: column; transform: translateX(104%); transition: transform .55s var(--ease) }
+.sheet.is-in { transform: none }
+.sheet-head { display: grid; grid-template-columns: 1fr auto; align-items: center; row-gap: 6px; padding: 24px max(22px, env(safe-area-inset-right, 0px)) 16px 36px; border-bottom: 1px solid var(--rule) }
+.sheet-en { display: flex; align-items: center; gap: 9px; font: 500 12px/1 var(--font-display); letter-spacing: .22em; text-transform: uppercase; color: var(--accent) }
+.sheet-head h2 { grid-column: 1; font-size: 22px; font-weight: 500; line-height: 1.3; outline-offset: 4px }
+.close { grid-column: 2; grid-row: 1 / 3; display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 12px 0 9px; border: 1px solid var(--edge); font-size: 12.5px; text-decoration: none; white-space: nowrap }
+.close:hover { background: var(--wash) }
+.sheet-body { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 20px max(22px, env(safe-area-inset-right, 0px)) 26px 36px; scrollbar-width: thin; scrollbar-color: var(--edge) transparent }
+.empty { padding: 18px 0; color: var(--ink-soft) }
+
+.work-list { list-style: none; margin: 0 0 18px; padding: 0; border-top: 1px solid var(--rule) }
+.work-list a { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 10px 2px 9px 20px; border-bottom: 1px solid var(--rule); text-decoration: none; color: var(--ink-soft); position: relative }
+.work-list a:hover { background: var(--wash); color: var(--ink) }
+.work-list a[aria-current] { color: var(--ink) }
+.work-list a[aria-current]::before { content: "▸"; position: absolute; left: 3px; color: var(--accent) }
+.wl-title { font: 500 15px/1.4 var(--font-display) }
+.wl-meta { display: flex; gap: 10px; font-size: 11.5px; white-space: nowrap }
+.work { display: flex; flex-direction: column; gap: 10px }
+.work-visual { display: block; box-sizing: border-box; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; border: 1px solid var(--edge) }
+.work-title { margin-top: 8px; font: 500 24px/1.25 var(--font-display); letter-spacing: .01em; overflow-wrap: anywhere }
+.work .actions { margin: 4px 0 6px }
+.work-desc { font-size: 14px; line-height: 1.9 }
+.tags { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: 12px; color: var(--ink-soft) }
+.tags li::before { content: "#" }
+
+.group + .group { margin-top: 26px }
+.group h3 { padding-bottom: 8px; border-bottom: 1px solid var(--edge); font-size: 12px; font-weight: 500; letter-spacing: .14em; color: var(--ink-soft); outline-offset: 4px }
+.group > p { margin-top: 12px; line-height: 1.9 }
+.counts { display: flex; flex-wrap: wrap; gap: 0; margin: 16px 0 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule) }
+.counts div { flex: 1; min-width: 72px; padding: 10px 12px 9px 0 }
+.counts div + div { padding-left: 14px; border-left: 1px solid var(--rule) }
+.counts dt { font-size: 11.5px; color: var(--ink-soft) }
+.counts dd { margin: 0; font: 300 26px/1.2 var(--font-display); font-variant-numeric: tabular-nums }
+.link-list { list-style: none; margin: 0; padding: 0 }
+.link-list li { border-bottom: 1px solid var(--rule) }
+.link-list a { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; text-decoration: none }
+.link-list a:hover { background: var(--wash) }
+
+.row { min-width: 0; margin: 0; padding: 14px 0 15px; border: 0; border-bottom: 1px solid var(--rule) }
+.row legend, .row-label { float: left; width: 100%; padding: 0; font-size: 14px; font-weight: 500 }
+.hint { clear: both; padding-top: 3px; font-size: 12px; line-height: 1.7; color: var(--ink-soft) }
+.row .btn { margin-top: 10px }
+.seg { clear: both; display: flex; flex-wrap: wrap; width: fit-content; max-width: 100%; margin-top: 10px; border: 1px solid var(--edge) }
+.seg label { position: relative; display: block; margin-left: -1px; border-left: 1px solid var(--edge) }
+.seg label:first-child { margin-left: 0; border-left: 0 }
+.seg input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer }
+.seg span { display: flex; align-items: center; min-height: 36px; padding: 0 14px; font-size: 13px; color: var(--ink-soft); transition: background-color .15s }
+.seg label:hover span { background: var(--wash) }
+.seg input:checked + span { background: rgb(255 255 255 / .17); color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent) }
+.seg input:focus-visible + span { outline: 2px solid #fff; outline-offset: -4px }
+
+/* ---------------------------------------------------------------- the room: labels on terminals, loading, restoring the UI */
+#tags { position: fixed; inset: 0; pointer-events: none; overflow: hidden }
+.tag { position: absolute; left: 0; top: 0; isolation: isolate; --cut: 8px; display: flex; align-items: baseline; gap: 10px; padding: 6px 15px 7px; white-space: nowrap; opacity: 0; transition: opacity .2s }
+.tag.is-on { opacity: 1 }
+.tag-en { font: 600 10px/1 var(--font-display); letter-spacing: .22em; text-transform: uppercase; color: var(--accent) }
+.tag-work { font-size: 12.5px; line-height: 1.2 }
+:root[data-view="sheet"] .tag, :root[data-ui="hidden"] .tag { opacity: 0 }
+.restore { position: fixed; right: max(14px, env(safe-area-inset-right, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); min-height: 44px; padding: 0 16px; background: var(--surface); border: 1px solid var(--edge); font-size: 12.5px; opacity: .62; transition: opacity .2s }
+.restore:hover, .restore:focus-visible { opacity: 1 }
+.noscript { position: fixed; inset: auto 0 0; margin: 0; padding: 14px; background: rgb(48 76 118); text-align: center }
+.space-note { position: absolute; left: 0; bottom: calc(var(--dock-h) + 20px + env(safe-area-inset-bottom, 0px)); isolation: isolate; --cut: 14px; max-width: calc(100% - 40px); box-sizing: border-box; padding: 7px 30px 8px max(20px, env(safe-area-inset-left, 0px)); font-size: 12.5px; line-height: 1.5 }
+:root[data-ui="hidden"] .space-note { display: none }
+/* while the room downloads, a hairline runs along the bottom of the title bar */
+.bar::after { content: ""; position: absolute; left: 0; bottom: -1px; width: 30%; height: 1px; background: var(--accent); opacity: 0 }
+:root[data-space="loading"] .bar::after { opacity: 1; animation: load 1.6s linear infinite }
+@keyframes load { from { transform: translateX(-100%) } to { transform: translateX(334%) } }
+
+/* ---------------------------------------------------------------- slabs slide out of their edges, and back in */
+.bar, .dock, .featured, .updates { transition: transform .7s var(--ease) }
+.featured { transition-delay: .1s }
+.updates { transition-delay: .18s }
+:root:not([data-ready]) .bar, :root[data-ui="hidden"] .bar { transform: translateY(-110%) }
+:root:not([data-ready]) .dock, :root[data-ui="hidden"] .dock { transform: translateY(110%) }
+:root:not([data-ready]) .featured, :root[data-ui="hidden"] .featured, :root[data-view="sheet"] .featured { transform: translateX(-106%) }
+:root:not([data-ready]) .updates, :root[data-ui="hidden"] .updates, :root[data-view="sheet"] .updates { transform: translateX(106%) }
+:root[data-view="sheet"] .featured, :root[data-view="sheet"] .updates { transition-delay: 0s }
+
+/* tablets and narrow windows: the dock keeps one row by dropping the Japanese captions */
+@media (max-width: 980px) {
+  .dock { width: calc(100% - 64px) }
+  .dock-list { padding: 0 32px }
+  .dock-list a { gap: 9px }
+  .dock-ja { display: none }
+  .featured { width: 372px }
+  .feat-card { grid-template-columns: 40% 1fr }
+}
+
+/* ---------------------------------------------------------------- phones: the same slabs, laid out for a thumb */
+@media (max-width: 700px) {
+  :root { --bar-h: 44px; --dock-h: 60px }
+  .bar { padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); gap: 10px }
+  .bar-brand { font-size: 13.5px; gap: 8px }
+  .bar-sub, .bar-date { display: none }
+  .bar-env { gap: 10px }
+  .bar-sky { padding-left: 10px; font-size: 13.5px }
+  .lobby { bottom: calc(var(--dock-h) + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; justify-content: flex-end; gap: 16px; padding-bottom: 18px }
+  .featured, .updates { position: relative; top: auto }
+  .featured { width: calc(100% - 22px) }
+  .dock-list a { gap: 5px }
+  .feat-card { grid-template-columns: 42% 1fr; --cut: 18px }
+  .feat-body { padding: 12px 18px 13px 14px }
+  .feat-title { font-size: 17px }
+  .feat-card .actions { flex-wrap: nowrap; gap: 6px }
+  .feat-card .btn { padding: 0 11px }
+  .updates { align-self: flex-end; width: calc(100% - 64px) }
+  .upd-list:not(.long) li:nth-child(n+4) { display: none }
+  .upd-slab { padding-bottom: 2px }
+  .more { display: inline-flex; align-items: center; min-height: 44px; margin-top: 0 }
+  .upd-list a { display: inline-block; padding: 6px 0; margin: -6px 0 }
+  .btn, .close { min-height: 44px }
+  .seg span { min-height: 44px }
+  .dock { width: 100%; --cut: 16px }
+  .dock-list { padding: 0 12px }
+  .dock-list a { flex-direction: column; gap: 5px }
+  .dock-list a .icon { width: 22px; height: 22px }
+  .dock-en { font-size: 10.5px; letter-spacing: .03em }
+  .dock-ja { display: none }
+  .dock-list li + li::before { display: none }
+  .dock-list a[aria-current]::after { left: 8px; width: calc(100% - 16px) }
+  .sheet { left: 0; width: auto; bottom: calc(var(--dock-h) + env(safe-area-inset-bottom, 0px)); --cut: 20px; transform: translateY(104%) }
+  .sheet-head { padding: 20px 16px 14px 22px }
+  .sheet-body { padding: 16px 16px 24px 22px }
+}
+@media (max-width: 359px) { .bar-phase { display: none } .dock-en { font-size: 9.5px } }
+/* short, wide screens (a phone on its side): keep the featured work, drop the updates */
+@media (min-width: 701px) and (max-height: 460px) { .updates { display: none } .featured { top: 16px } }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important } }
+:root[data-motion="reduce"] *, :root[data-motion="reduce"] *::before, :root[data-motion="reduce"] *::after { transition: none !important; animation: none !important }
