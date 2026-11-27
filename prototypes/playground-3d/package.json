@@ -1,0 +1,16 @@
+{
+  "name": "pirafu-playground-3d-prototype",
+  "private": true,
+  "version": "0.3.0",
+  "type": "module",
+  "description": "Stand-alone prototype of the Pirafu2411 Playground 3D space. Not part of the production build.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5174 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 5174 --strictPort",
+    "assets:works": "node scripts/prepare-works.mjs"
+  },
+  "dependencies": {
+    "three": "0.187.0"
+  }
+}
