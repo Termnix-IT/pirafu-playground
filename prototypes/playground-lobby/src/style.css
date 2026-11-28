@@ -1,7 +1,8 @@
 /* The lobby's web UI. The 3D room behind it is soft, organic and full of light; the UI is the opposite on
-   purpose: straight edges, diagonal cuts, hairlines, flat fills. Every slab grows out of an edge of the screen
-   (the title bar from the top, the dock from the bottom, the topics from the left, the update and the sheets
-   from the right), which leaves the middle of the room free to look at.
+   purpose: straight edges, diagonal cuts, hairlines, flat fills. What is operated grows out of an edge of the
+   screen (the title bar from the top, the dock from the bottom, the update and the sheets from the right),
+   which leaves the middle of the room free to look at. The topics are an announcement, not an instrument:
+   their banner stands free, a little in from the left edge, and the two headings are plain type on the room.
 
    Nothing here blurs, glows or casts a shadow. A slab is told apart from the room by tone alone: a blue-grey
    that is darker than the daytime sky and lighter than the night, shifted a little with the time of day
@@ -19,6 +20,8 @@
   --edge: rgb(255 255 255 / .4);
   --wash: rgb(255 255 255 / .09); --wash-2: rgb(255 255 255 / .17);
   --accent: #b9e7ff; --paper: #f4f8fc; --paper-ink: #132c4a;
+  /* type and marks that sit directly on the room, with no slab under them: dark on the bright sky, light at night */
+  --on-room: #0e2545;
   --bar-h: 38px; --dock-h: 56px;
   --ease: cubic-bezier(.2, .8, .2, 1);
   --font-display: 'Sora', 'Zen Kaku Gothic New', system-ui, sans-serif;
@@ -28,8 +31,8 @@
   color-scheme: dark;
 }
 :root[data-phase="morning"] { --ui-deep: 40 64 102; --ui: 54 82 122; --ui-soft: 76 104 144; --sky: linear-gradient(#3f7fd0, #cfe6f8 60%, #f4ece6) }
-:root[data-phase="evening"] { --ui-deep: 44 50 98; --ui: 58 66 116; --ui-soft: 82 90 140; --accent: #ffd9c2; --sky: linear-gradient(#4a5eae, #e7a79c 58%, #f6cdb4) }
-:root[data-phase="night"] { --ui-deep: 42 62 108; --ui: 58 80 128; --ui-soft: 78 100 148; --edge: rgb(206 224 255 / .42); --sky: linear-gradient(#060d26, #172a58 64%, #22386c) }
+:root[data-phase="evening"] { --ui-deep: 44 50 98; --ui: 58 66 116; --ui-soft: 82 90 140; --accent: #ffd9c2; --on-room: #1d1542; --sky: linear-gradient(#4a5eae, #e7a79c 58%, #f6cdb4) }
+:root[data-phase="night"] { --ui-deep: 42 62 108; --ui: 58 80 128; --ui-soft: 78 100 148; --edge: rgb(206 224 255 / .42); --on-room: #f2f6ff; --sky: linear-gradient(#060d26, #172a58 64%, #22386c) }
 :root[data-opaque] { --a-deep: 1; --a: 1; --a-soft: 1 }
 
 html, body { height: 100%; margin: 0 }
@@ -77,17 +80,18 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 :root[data-space="loading"][data-load="known"] .bar::after { width: 100%; animation: none; transform: scaleX(var(--load, 0)); transition: transform .3s linear }
 @keyframes sweep { from { transform: translateX(-100%) } to { transform: translateX(334%) } }
 
-/* ---------------------------------------------------------------- labels that stand outside the cards */
-.eyebrow { position: relative; isolation: isolate; --surface: var(--deep); --cut: 13px; display: flex; align-items: center; height: 26px; font-size: 12px; font-weight: 700; line-height: 1; letter-spacing: .18em }
-.topics .eyebrow { padding: 0 28px 0 max(20px, env(safe-area-inset-left, 0px)) }
-.updates .eyebrow { padding: 0 max(18px, env(safe-area-inset-right, 0px)) 0 28px }
+/* ---------------------------------------------------------------- headings of the two groups on the lobby
+   Plain type on the room, just above what it names. Nearness and a shared left edge do the grouping. */
+.eyebrow { color: var(--on-room); font-size: 16px; font-weight: 700; line-height: 1; letter-spacing: .1em }
+/* the update's heading starts where the text inside its slab starts */
+.updates .eyebrow { padding-left: 24px }
 
 /* ---------------------------------------------------------------- lobby */
 .lobby { position: absolute; inset: var(--bar-h) 0 var(--dock-h); pointer-events: none }
 .lobby > * { pointer-events: auto }
 
 /* 最新トピック: the banner is the whole message. It keeps its own colours and type; only its outline is the lobby's. */
-.topics { position: absolute; left: 0; top: 34px; width: clamp(360px, 24vw, 540px); display: flex; flex-direction: column; align-items: flex-start; gap: 9px }
+.topics { --inset: clamp(24px, 1.7vw, 32px); position: absolute; left: max(var(--inset), env(safe-area-inset-left, 0px)); top: 30px; width: clamp(360px, 24vw, 540px); display: flex; flex-direction: column; align-items: flex-start; gap: 10px }
 .tp { width: 100% }
 .tp-view { position: relative; isolation: isolate; --cut: 24px; aspect-ratio: 21 / 9; overflow: hidden; touch-action: pan-y; background: rgb(var(--ui-deep));
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%) }
@@ -100,23 +104,27 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 .tp-slide:hover img { transform: scale(1.03) }
 .tp-slide:active img { transform: scale(1.01) }
 .tp-slide:focus-visible { outline: 3px solid #fff; outline-offset: -6px }
-.tp-bar { position: relative; isolation: isolate; --surface: var(--deep); --cut: 14px; display: flex; align-items: center; gap: 2px; width: fit-content; height: 30px; margin-top: 7px; padding: 0 22px 0 max(12px, env(safe-area-inset-left, 0px)) }
-.tp-dots { display: flex; margin: 0 8px 0 0; padding: 0; list-style: none }
-.tp-dots button { display: grid; place-items: center; width: 34px; height: 30px; padding: 0 3px; box-sizing: border-box }
-.tp-dots i { position: relative; display: block; width: 100%; height: 3px; background: rgb(255 255 255 / .3); overflow: hidden }
-.tp-dots i::after { content: ""; position: absolute; inset: 0; background: var(--ink); transform: scaleX(0); transform-origin: left }
-.tp-dots button:hover i { background: rgb(255 255 255 / .5) }
+/* the marks and the controls sit on the room itself, in one row as wide as the banner: marks from its left
+   edge, controls to its right edge */
+.tp-bar { display: flex; align-items: center; height: 32px; margin-top: 6px; color: var(--on-room) }
+.tp-dots { display: flex; margin: 0 auto 0 -3px; padding: 0; list-style: none }
+.tp-dots button { display: grid; place-items: center; width: 38px; height: 32px; padding: 0 3px; box-sizing: border-box }
+.tp-dots i { position: relative; display: block; width: 100%; height: 4px; background: color-mix(in srgb, currentColor 34%, transparent); overflow: hidden }
+.tp-dots i::after { content: ""; position: absolute; inset: 0; background: currentColor; transform: scaleX(0); transform-origin: left }
+.tp-dots button:hover i { height: 6px; background: color-mix(in srgb, currentColor 50%, transparent) }
 .tp-dots button[aria-current] i::after { transform: scaleX(1) }
 /* while the banner turns by itself, the mark of the one on show fills up until the turn */
 .topics.is-turning .tp-dots button[aria-current] i::after { animation: fill 8s linear }
 @keyframes fill { from { transform: scaleX(0) } to { transform: scaleX(1) } }
-.tp-pause, .tp-step { display: grid; place-items: center; width: 30px; height: 30px; color: var(--ink-2) }
-.tp-pause:hover, .tp-step:hover { background: var(--wash); color: var(--ink) }
-.tp-pause:active, .tp-step:active { background: var(--wash-2) }
-.tp-bar :focus-visible { outline-offset: -3px }
+.tp-pause, .tp-step { display: grid; place-items: center; width: 32px; height: 32px }
+.tp-bar .icon { stroke-width: 2.4; transition: transform .15s var(--ease) }
+.tp-step:last-child { margin-right: -6px }
+.tp-pause:hover .icon, .tp-step:hover .icon { transform: scale(1.2) }
+.tp-pause:active .icon, .tp-step:active .icon { transform: scale(.92) }
+.tp-bar :focus-visible { outline-color: var(--on-room); outline-offset: -3px }
 
 /* 更新情報: one line of what changed last. Quiet by design; the topics are what asks for attention. */
-.updates { position: absolute; right: 0; top: 34px; width: clamp(248px, 17vw, 320px); display: flex; flex-direction: column; align-items: flex-end; gap: 9px }
+.updates { position: absolute; right: 0; top: 30px; width: clamp(248px, 17vw, 320px); display: flex; flex-direction: column; gap: 10px }
 .upd-slab { position: relative; isolation: isolate; --surface: var(--soft); --cut: 16px; box-sizing: border-box; width: 100%; padding: 11px max(16px, env(safe-area-inset-right, 0px)) 9px 24px }
 .upd-latest { display: flex; flex-direction: column; gap: 4px }
 .upd-latest time, .upd-list time { font: 500 11px/1 var(--font-display); letter-spacing: .06em; color: var(--ink-3); font-variant-numeric: tabular-nums }
@@ -279,7 +287,7 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 .updates { transition-delay: .14s }
 :root:not([data-ready]) .bar, :root[data-ui="hidden"] .bar { transform: translateY(-110%) }
 :root:not([data-ready]) .dock, :root[data-ui="hidden"] .dock { transform: translateY(110%) }
-:root:not([data-ready]) .topics, :root[data-ui="hidden"] .topics, :root[data-view="sheet"] .topics { transform: translateX(-106%) }
+:root:not([data-ready]) .topics, :root[data-ui="hidden"] .topics, :root[data-view="sheet"] .topics { transform: translateX(calc(-100% - 56px)) }
 :root:not([data-ready]) .updates, :root[data-ui="hidden"] .updates, :root[data-view="sheet"] .updates { transform: translateX(106%) }
 :root[data-view="sheet"] .topics, :root[data-view="sheet"] .updates { transition-delay: 0s; transition-duration: .45s }
 
@@ -301,7 +309,10 @@ h1, h2, h3, p, dl, dd { margin: 0 }
   .bar-sky { padding-left: 10px; font-size: 13.5px }
   .lobby { bottom: calc(var(--dock-h) + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; justify-content: flex-end; gap: 14px; padding-bottom: 16px }
   .topics, .updates { position: relative; top: auto }
-  .topics { width: calc(100% - 20px) }
+  .topics { left: 0; box-sizing: border-box; width: 100%; padding: 0 max(14px, env(safe-area-inset-right, 0px)) 0 max(14px, env(safe-area-inset-left, 0px)) }
+  /* With the sky alone behind a phone's lobby, the horizon runs just under the topics' heading: the heading is on
+     the bright sky, everything below it on the sea, which is dark at every hour. (The sea of clouds is bright.) */
+  :root[data-space="sky"]:not([data-scene="cloud"]) :is(.tp-bar, .updates .eyebrow) { --on-room: var(--ink) }
   .tp-view { --cut: 20px }
   .tp-bar { height: 40px }
   .tp-dots button, .tp-pause, .tp-step { height: 40px }

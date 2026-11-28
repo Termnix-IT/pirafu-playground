@@ -122,7 +122,7 @@ function renderUpdates() {
   const u = DATA.updates[0]
   $('updates').hidden = !u
   if (!u) return
-  $('updates').innerHTML = `<h2 class="eyebrow" id="updatesTitle" data-frame="tabRight">更新情報</h2>
+  $('updates').innerHTML = `<h2 class="eyebrow" id="updatesTitle">更新情報</h2>
     <div class="upd-slab" data-frame="right">
       <p class="upd-latest"><time datetime="${u.date}">${u.date.replaceAll('-', '.')}</time><span>${u.workId ? `<a href="#/${u.area}/${u.workId}">${esc(u.text)}</a>` : esc(u.text)}</span></p>
       <a class="more" href="#/updates">更新履歴を見る${icon('next', 14)}</a>
@@ -282,6 +282,7 @@ function showLevel() {
 function applyPrefs(changed) {
   if (prefs.opaque) root.dataset.opaque = ''; else delete root.dataset.opaque
   if (reduced()) root.dataset.motion = 'reduce'; else delete root.dataset.motion
+  root.dataset.scene = prefs.scene
   tickBar()
   if (!changed || changed === 'motion') topics.refresh()
   if (!changed || changed === 'scene') { stage?.setScene(SCENES.findIndex((s) => s.key === prefs.scene), !changed); syncBackdrop() }
@@ -440,6 +441,7 @@ applyRoute(true)
 tickBar()
 if (prefs.opaque) root.dataset.opaque = ''
 if (reduced()) root.dataset.motion = 'reduce'
+root.dataset.scene = prefs.scene
 setInterval(tickBar, 1000)
 narrow.addEventListener('change', () => { redrawFrames(); if (prefs.view === 'auto') applySpace(); syncStage() })
 systemReduced.addEventListener('change', () => applyPrefs('motion'))

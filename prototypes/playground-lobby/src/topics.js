@@ -43,18 +43,18 @@ export function createTopics({ host, topics, baseUrl, reduced }) {
     try { saved = sessionStorage.getItem(SESSION) } catch { /* ignore */ }
     index = Math.max(0, list.findIndex((t) => t.id === saved))
     const many = list.length > 1
-    host.innerHTML = `<h2 class="eyebrow" id="topicsTitle" data-frame="tabLeft">最新トピック</h2>
+    host.innerHTML = `<h2 class="eyebrow" id="topicsTitle">最新トピック</h2>
       <div class="tp" id="tp" role="group" aria-roledescription="カルーセル" aria-labelledby="topicsTitle">
-        <div class="tp-view" data-frame="left">${list.map((t, i) => `
+        <div class="tp-view" data-frame="card">${list.map((t, i) => `
           <a class="tp-slide" draggable="false" href="${esc(t.href)}"${t.external ? ' target="_blank" rel="noopener"' : ''} data-i="${i}" aria-label="${esc(t.kind)}：${esc(t.title)}${t.external ? '（新しいタブで開きます）' : ''}"${many ? ` aria-roledescription="スライド"` : ''}>
             <img src="${esc(baseUrl + t.imageSmall)}" srcset="${esc(baseUrl + t.imageSmall)} 630w, ${esc(baseUrl + t.image)} 1260w" sizes="(max-width: 700px) 92vw, 440px" alt="${esc(t.alt)}" width="1260" height="540" ${i === index ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" draggable="false">
           </a>`).join('')}
         </div>
-        ${many ? `<div class="tp-bar" data-frame="tabLeft">
+        ${many ? `<div class="tp-bar">
           <ol class="tp-dots">${list.map((t, i) => `<li><button type="button" data-i="${i}" aria-label="${i + 1}件目：${esc(t.title)}"><i></i></button></li>`).join('')}</ol>
           <button type="button" class="tp-pause" id="tpPause"></button>
-          <button type="button" class="tp-step" id="tpPrev" aria-label="前のトピック">${icon('prev', 18)}</button>
-          <button type="button" class="tp-step" id="tpNext" aria-label="次のトピック">${icon('next', 18)}</button>
+          <button type="button" class="tp-step" id="tpPrev" aria-label="前のトピック">${icon('prev', 20)}</button>
+          <button type="button" class="tp-step" id="tpNext" aria-label="次のトピック">${icon('next', 20)}</button>
         </div>
         <p class="sr" aria-live="polite" id="tpLive"></p>` : ''}
       </div>`
@@ -101,7 +101,7 @@ export function createTopics({ host, topics, baseUrl, reduced }) {
     // with reduced motion the banner never turns by itself, so there is nothing to pause
     b.hidden = reduced()
     b.setAttribute('aria-label', state.paused ? '自動切り替えを再開する' : '自動切り替えを止める')
-    b.innerHTML = icon(state.paused ? 'play' : 'pause', 18)
+    b.innerHTML = icon(state.paused ? 'play' : 'pause', 20)
   }
 
   // Puts slide i on show. dir: 1 the new one comes in from the right, -1 from the left, 0 no movement.

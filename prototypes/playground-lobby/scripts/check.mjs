@@ -67,6 +67,14 @@ if (!only || only === 'pc') {
   const slides = await page.locator('.tp-slide').count()
   check('topics: every banner is one link holding one image', slides >= 2 && await page.evaluate(() => [...document.querySelectorAll('.tp-slide')].every((a) => a.tagName === 'A' && a.children.length === 1 && a.querySelector('img').alt.length > 0 && a.getAttribute('aria-label').includes('：'))))
   check('topics: the heading stands outside the banner', await page.evaluate(() => !document.querySelector('.tp-view').contains(document.getElementById('topicsTitle')) && !document.getElementById('topicsTitle').closest('.tp')))
+  check('the headings and the carousel controls are plain marks on the room, with no slab drawn under them', await page.evaluate(() => ['#topicsTitle', '#updatesTitle', '.tp-bar'].every((s) => { const el = document.querySelector(s); return !el.querySelector(':scope > .frame') && getComputedStyle(el).backgroundColor === 'rgba(0, 0, 0, 0)' })))
+  check('topics: the banner stands in from the left edge, in line with its heading and its marks', await page.evaluate(() => {
+    const left = (s) => document.querySelector(s).getBoundingClientRect().left
+    const banner = left('.tp-view')
+    return banner >= 24 && Math.abs(left('#topicsTitle') - banner) <= 1 && Math.abs(left('.tp-dots i') - banner) <= 1
+      && Math.abs(document.querySelector('.tp-step:last-child .icon').getBoundingClientRect().right - document.querySelector('.tp-view').getBoundingClientRect().right) <= 2
+  }))
+  check('updates: the slab still reaches the right edge of the screen', await page.evaluate(() => document.querySelector('.upd-slab').getBoundingClientRect().right >= innerWidth - 1))
   check('topics: one mark per banner', await page.locator('.tp-dots button').count() === slides)
   check('topics: only the banner on show can be reached', await page.evaluate(() => [...document.querySelectorAll('.tp-slide')].filter((s) => !s.inert).length === 1))
   await page.mouse.move(960, 560)

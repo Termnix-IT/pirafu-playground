@@ -15,6 +15,8 @@ const SHAPES = {
   // a tab on the left edge with a slanted end, used for the labels that stand outside the cards
   tabLeft: (w, h, c) => [[-OUT, 0.5], [w - c, 0.5], [w - 0.5, h - 0.5], [-OUT, h - 0.5]],
   tabRight: (w, h, c) => [[c, 0.5], [w + OUT, 0.5], [w + OUT, h - 0.5], [0.5, h - 0.5]],
+  // stands free of every edge: closed all round, the lower right corner cut
+  card: (w, h, c) => [[0.5, 0.5], [w - 0.5, 0.5], [w - 0.5, h - c], [w - c, h - 0.5], [0.5, h - 0.5]],
   // free-standing plate with two opposite corners cut
   plate: (w, h, c) => [[c, 0.5], [w - 0.5, 0.5], [w - 0.5, h - c], [w - c, h - 0.5], [0.5, h - 0.5], [0.5, c]],
 }
