@@ -24,10 +24,13 @@
   --on-room: #0a1e3d;
   --bar-h: 38px; --dock-h: 56px;
   --ease: cubic-bezier(.2, .8, .2, 1);
-  /* Sora draws the Latin letters and the figures everywhere; M PLUS 2 draws the Japanese. Both are geometric and
-     even in colour, so a line that mixes them reads as one face. Display and body differ in weight and size only. */
-  --font-display: 'Sora', 'M PLUS 2', system-ui, 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', sans-serif;
-  --font-body: 'Sora', 'M PLUS 2', system-ui, 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', sans-serif;
+  /* Sora draws the Latin letters and the figures everywhere; LINE Seed JP draws the Japanese. Both are built on
+     the same plain geometry, so a line that mixes them reads as one face, and both are light enough to sit on
+     the room without weighing on it. Display and body differ in weight and size only.
+     LINE Seed JP comes in regular and bold with nothing between: text that asks for 500 is drawn at 400. The
+     few small lines that have to carry (the latest update, the way to the history) are set bold instead. */
+  --font-display: 'Sora', 'LINE Seed JP', system-ui, 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', sans-serif;
+  --font-body: 'Sora', 'LINE Seed JP', system-ui, 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', sans-serif;
   --deep: rgb(var(--ui-deep) / var(--a-deep)); --base: rgb(var(--ui) / var(--a)); --soft: rgb(var(--ui-soft) / var(--a-soft));
   --sky: linear-gradient(#2f79d0, #a9d3f5 62%, #e4eff8);
   color-scheme: dark;
@@ -84,7 +87,7 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 
 /* ---------------------------------------------------------------- headings of the two groups on the lobby
    Plain type on the room, just above what it names. Nearness and a shared left edge do the grouping. */
-.eyebrow { color: var(--on-room); font-size: 17px; font-weight: 700; line-height: 1; letter-spacing: .08em }
+.eyebrow { color: var(--on-room); font-size: 17px; font-weight: 700; line-height: 1; letter-spacing: .06em }
 
 /* ---------------------------------------------------------------- lobby */
 .lobby { position: absolute; inset: var(--bar-h) 0 var(--dock-h); pointer-events: none }
@@ -134,8 +137,8 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 .upd-slab { position: relative; isolation: isolate; --surface: var(--soft); --cut: 11px; box-sizing: border-box; width: 100%; padding: 6px max(16px, env(safe-area-inset-right, 0px)) 6px 22px }
 .upd-latest { display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 12px }
 .upd-latest time, .upd-list time { font: 500 11px/1 var(--font-display); letter-spacing: .06em; color: var(--ink-3); font-variant-numeric: tabular-nums }
-.upd-latest span { font-size: 13.5px; font-weight: 500; line-height: 1.5 }
-.more { display: inline-flex; align-items: center; gap: 1px; margin: -7px 0; padding: 7px 0; font-size: 13px; font-weight: 500; line-height: 1; white-space: nowrap; text-decoration: none }
+.upd-latest span { font-size: 13.5px; font-weight: 700; line-height: 1.5 }
+.more { display: inline-flex; align-items: center; gap: 1px; margin: -7px 0; padding: 7px 0; font-size: 13px; font-weight: 700; line-height: 1; white-space: nowrap; text-decoration: none }
 .more:hover { text-decoration: underline; text-underline-offset: 4px }
 .more .icon { transition: transform .15s var(--ease) }
 .more:hover .icon { transform: translateX(2px) }
@@ -171,7 +174,7 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 .dock-list { list-style: none; margin: 0; padding: 0 34px; height: var(--dock-h); display: grid; grid-template-columns: repeat(6, 1fr) }
 .dock-list li { position: relative }
 .dock-list li + li::before { content: ""; position: absolute; left: 0; top: 50%; height: 22px; margin-top: -11px; border-left: 1px solid var(--line-faint) }
-.dock-list a { position: relative; height: 100%; display: flex; align-items: center; justify-content: center; gap: 9px; text-decoration: none; color: var(--ink-2); font-size: 14px; font-weight: 500; letter-spacing: .04em; white-space: nowrap; transition: background-color .15s, color .15s }
+.dock-list a { position: relative; height: 100%; display: flex; align-items: center; justify-content: center; gap: 9px; text-decoration: none; color: var(--ink-2); font-size: 14px; font-weight: 500; letter-spacing: .02em; white-space: nowrap; transition: background-color .15s, color .15s }
 .dock-list a .icon { color: var(--ink-3); transition: color .15s }
 /* the label reserves the width of its heavier form, so choosing an entry moves nothing */
 .dock-list a > span { display: inline-grid }
