@@ -23,6 +23,13 @@
   /* type and marks that sit directly on the room, with no slab under them: dark on the bright sky, light at night */
   --on-room: #0a1e3d;
   --bar-h: 38px; --dock-h: 56px;
+  /* Type comes in eight sizes, a pixel or more apart so that each step can be seen, and five trackings.
+       2xs  small capitals and dates        xs  notes, hints, tags        sm  controls
+       md   text of the UI                  lg  running text, item names  xl  headings on the room
+       2xl  heading of a sheet              3xl a work's title, big figures
+     A screen that needs a size of its own is free to set one. */
+  --t-2xs: 11px; --t-xs: 12px; --t-sm: 13px; --t-md: 14px; --t-lg: 15px; --t-xl: 17px; --t-2xl: 20px; --t-3xl: 27px;
+  --ls-caps: .16em; --ls-head: .06em; --ls-fig: .04em; --ls-ui: .02em;
   --ease: cubic-bezier(.2, .8, .2, 1);
   /* Sora draws the Latin letters and the figures everywhere; LINE Seed JP draws the Japanese. Both are built on
      the same plain geometry, so a line that mixes them reads as one face, and both are light enough to sit on
@@ -42,7 +49,7 @@
 
 html, body { height: 100%; margin: 0 }
 [hidden] { display: none !important }
-body { background: var(--sky); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.6; overflow: hidden; -webkit-text-size-adjust: 100% }
+body { background: var(--sky); color: var(--ink); font-family: var(--font-body); font-size: var(--t-md); line-height: 1.6; overflow: hidden; -webkit-text-size-adjust: 100% }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer }
 a { color: inherit }
 h1, h2, h3, p, dl, dd { margin: 0 }
@@ -69,15 +76,15 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 /* ---------------------------------------------------------------- title bar */
 .bar { position: absolute; inset: 0 0 auto; box-sizing: border-box; height: calc(var(--bar-h) + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) max(18px, env(safe-area-inset-right, 0px)) 0 max(14px, env(safe-area-inset-left, 0px));
   display: flex; align-items: center; justify-content: space-between; gap: 16px; background: var(--deep); border-bottom: 1px solid var(--edge); white-space: nowrap }
-.bar-brand { display: flex; align-items: center; gap: 10px; min-width: 0; font: 600 15px/1 var(--font-display); letter-spacing: .02em }
+.bar-brand { display: flex; align-items: center; gap: 10px; min-width: 0; font: 600 var(--t-lg)/1 var(--font-display); letter-spacing: var(--ls-ui) }
 .mark { display: grid; place-items: center }
 .mark-svg { fill: currentColor; display: block }
 .bar-name { overflow: hidden; text-overflow: ellipsis }
-.bar-sub { padding-left: 12px; border-left: 1px solid var(--line); font-size: 10.5px; font-weight: 400; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3) }
+.bar-sub { padding-left: 12px; border-left: 1px solid var(--line); font-size: var(--t-2xs); font-weight: 400; letter-spacing: var(--ls-caps); text-transform: uppercase; color: var(--ink-3) }
 .bar-env { display: flex; align-items: center; gap: 14px; font-family: var(--font-display); font-variant-numeric: tabular-nums }
-.bar-date { font: 400 11.5px/1 var(--font-body); color: var(--ink-3) }
-.bar-time { font-size: 13px; font-weight: 500; letter-spacing: .04em; color: var(--ink-2) }
-.bar-sky { display: flex; align-items: center; gap: 6px; padding-left: 14px; border-left: 1px solid var(--line); font: 500 14.5px/1 var(--font-body) }
+.bar-date { font: 400 var(--t-xs)/1 var(--font-body); color: var(--ink-3) }
+.bar-time { font-size: var(--t-sm); font-weight: 500; letter-spacing: var(--ls-fig); color: var(--ink-2) }
+.bar-sky { display: flex; align-items: center; gap: 6px; padding-left: 14px; border-left: 1px solid var(--line); font: 500 var(--t-md)/1 var(--font-body) }
 .bar-phase { padding-left: 7px; border-left: 1px solid var(--line); color: var(--ink-2) }
 /* loading shows as a hairline under the bar: as wide as the bytes received when their total is known, a sweep otherwise */
 .bar::after { content: ""; position: absolute; left: 0; bottom: -1px; width: 30%; height: 1px; background: var(--accent); opacity: 0; transform-origin: left }
@@ -87,7 +94,7 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 
 /* ---------------------------------------------------------------- headings of the two groups on the lobby
    Plain type on the room, just above what it names. Nearness and a shared left edge do the grouping. */
-.eyebrow { color: var(--on-room); font-size: 17px; font-weight: 700; line-height: 1; letter-spacing: .06em }
+.eyebrow { color: var(--on-room); font-size: var(--t-xl); font-weight: 700; line-height: 1; letter-spacing: var(--ls-head) }
 
 /* ---------------------------------------------------------------- lobby */
 .lobby { position: absolute; inset: var(--bar-h) 0 var(--dock-h); pointer-events: none }
@@ -136,9 +143,9 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 .upd-head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 22px; color: var(--on-room) }
 .upd-slab { position: relative; isolation: isolate; --surface: var(--soft); --cut: 11px; box-sizing: border-box; width: 100%; padding: 6px max(16px, env(safe-area-inset-right, 0px)) 6px 22px }
 .upd-latest { display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 12px }
-.upd-latest time, .upd-list time { font: 500 11px/1 var(--font-display); letter-spacing: .06em; color: var(--ink-3); font-variant-numeric: tabular-nums }
-.upd-latest span { font-size: 13.5px; font-weight: 700; line-height: 1.5 }
-.more { display: inline-flex; align-items: center; gap: 1px; margin: -7px 0; padding: 7px 0; font-size: 13px; font-weight: 700; line-height: 1; white-space: nowrap; text-decoration: none }
+.upd-latest time, .upd-list time { font: 500 var(--t-2xs)/1 var(--font-display); letter-spacing: var(--ls-fig); color: var(--ink-3); font-variant-numeric: tabular-nums }
+.upd-latest span { font-size: var(--t-md); font-weight: 700; line-height: 1.5 }
+.more { display: inline-flex; align-items: center; gap: 1px; margin: -7px 0; padding: 7px 0; font-size: var(--t-sm); font-weight: 700; line-height: 1; white-space: nowrap; text-decoration: none }
 .more:hover { text-decoration: underline; text-underline-offset: 4px }
 .more .icon { transition: transform .15s var(--ease) }
 .more:hover .icon { transform: translateX(2px) }
@@ -146,7 +153,7 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 .upd-latest a, .upd-list a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: var(--line-strong) }
 .upd-latest a:hover, .upd-list a:hover { text-decoration-color: currentColor }
 .upd-list { list-style: none; margin: 0; padding: 0 }
-.upd-list li { display: grid; grid-template-columns: 82px 1fr; align-items: baseline; gap: 10px; padding: 10px 0 9px; border-bottom: 1px solid var(--line-faint); font-size: 13.5px; line-height: 1.5 }
+.upd-list li { display: grid; grid-template-columns: 82px 1fr; align-items: baseline; gap: 10px; padding: 10px 0 9px; border-bottom: 1px solid var(--line-faint); font-size: var(--t-md); line-height: 1.5 }
 .upd-list li:first-child { color: var(--ink); font-weight: 500 }
 .upd-list li { color: var(--ink-2) }
 
@@ -154,17 +161,17 @@ h1, h2, h3, p, dl, dd { margin: 0 }
    primary  the one thing to do here: paper-white, heavy, with the lobby's cut corner
    plain    an outlined alternative
    quiet    a side road: thinner line, softer ink */
-.btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; padding: 0 14px; border: 1px solid var(--line-strong); font-size: 13px; font-weight: 500; line-height: 1; text-decoration: none; white-space: nowrap; transition: background-color .15s, color .15s }
+.btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; padding: 0 14px; border: 1px solid var(--line-strong); font-size: var(--t-sm); font-weight: 500; line-height: 1; text-decoration: none; white-space: nowrap; transition: background-color .15s, color .15s }
 .btn:hover { background: var(--wash) }
 .btn:active { background: var(--wash-2) }
 .btn.primary { border-color: transparent; background: var(--paper); color: var(--paper-ink); font-weight: 700; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%) }
 .btn.primary:hover { background: #fff }
 .btn.primary:active { background: #dfe8f3 }
 .btn.primary:focus-visible { outline-offset: -4px; outline-color: var(--paper-ink) }
-.btn.big { flex: 1; min-height: 46px; padding: 0 24px; font-size: 15.5px; letter-spacing: .08em }
-.btn.quiet { border-color: var(--line); color: var(--ink-2); font-size: 12.5px; font-weight: 400 }
+.btn.big { flex: 1; min-height: 46px; padding: 0 24px; font-size: var(--t-lg); letter-spacing: var(--ls-head) }
+.btn.quiet { border-color: var(--line); color: var(--ink-2); font-size: var(--t-xs); font-weight: 400 }
 .btn.quiet:hover { color: var(--ink) }
-.note { font-size: 12.5px; color: var(--ink-2) }
+.note { font-size: var(--t-xs); color: var(--ink-2) }
 
 /* ---------------------------------------------------------------- dock: one slab that rises from the bottom edge
    An entry can be: at rest, under the pointer, pressed, the current page, or focused from the keyboard.
@@ -174,7 +181,7 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 .dock-list { list-style: none; margin: 0; padding: 0 34px; height: var(--dock-h); display: grid; grid-template-columns: repeat(6, 1fr) }
 .dock-list li { position: relative }
 .dock-list li + li::before { content: ""; position: absolute; left: 0; top: 50%; height: 22px; margin-top: -11px; border-left: 1px solid var(--line-faint) }
-.dock-list a { position: relative; height: 100%; display: flex; align-items: center; justify-content: center; gap: 9px; text-decoration: none; color: var(--ink-2); font-size: 14px; font-weight: 500; letter-spacing: .02em; white-space: nowrap; transition: background-color .15s, color .15s }
+.dock-list a { position: relative; height: 100%; display: flex; align-items: center; justify-content: center; gap: 9px; text-decoration: none; color: var(--ink-2); font-size: var(--t-md); font-weight: 500; letter-spacing: var(--ls-ui); white-space: nowrap; transition: background-color .15s, color .15s }
 .dock-list a .icon { color: var(--ink-3); transition: color .15s }
 /* the label reserves the width of its heavier form, so choosing an entry moves nothing */
 .dock-list a > span { display: inline-grid }
@@ -199,9 +206,9 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 .sheet.is-swap > :not(.frame) { animation: arrive .3s var(--ease) both }
 @keyframes arrive { from { opacity: 0; transform: translateX(14px) } }
 .sheet-head { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 24px max(20px, env(safe-area-inset-right, 0px)) 16px 36px; border-bottom: 1px solid var(--line-strong) }
-.sheet-head h2 { display: flex; align-items: center; gap: 11px; font-size: 21px; font-weight: 700; line-height: 1.3; letter-spacing: .04em; outline-offset: 5px }
+.sheet-head h2 { display: flex; align-items: center; gap: 11px; font-size: var(--t-2xl); font-weight: 700; line-height: 1.3; letter-spacing: var(--ls-head); outline-offset: 5px }
 .sheet-head h2 .icon { color: var(--accent) }
-.close { display: inline-flex; align-items: center; gap: 5px; min-height: 34px; padding: 0 12px 0 8px; border: 1px solid var(--line); font-size: 12.5px; color: var(--ink-2); text-decoration: none; white-space: nowrap }
+.close { display: inline-flex; align-items: center; gap: 5px; min-height: 34px; padding: 0 12px 0 8px; border: 1px solid var(--line); font-size: var(--t-sm); color: var(--ink-2); text-decoration: none; white-space: nowrap }
 .close:hover { background: var(--wash); color: var(--ink) }
 .close:active { background: var(--wash-2) }
 .work-list { flex: none; max-height: 177px; overflow: auto; background: rgb(var(--ui-deep) / .5); border-bottom: 1px solid var(--line-strong); scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent }
@@ -213,32 +220,32 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 .work-list a:focus-visible { outline-offset: -3px }
 .work-list a[aria-current] { background: var(--wash-2); color: var(--ink) }
 .work-list a[aria-current]::before { content: "▸"; position: absolute; left: 16px; color: var(--accent) }
-.wl-title { font: 500 15px/1.4 var(--font-display) }
+.wl-title { font: 500 var(--t-lg)/1.4 var(--font-display) }
 .work-list a[aria-current] .wl-title { font-weight: 600 }
-.wl-meta { display: flex; gap: 5px; font-size: 11.5px; color: var(--ink-3); white-space: nowrap }
+.wl-meta { display: flex; gap: 5px; font-size: var(--t-xs); color: var(--ink-3); white-space: nowrap }
 .sheet-body { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 22px max(20px, env(safe-area-inset-right, 0px)) 26px 36px; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent }
 .sheet-foot { flex: none; display: flex; align-items: center; gap: 10px; padding: 14px max(20px, env(safe-area-inset-right, 0px)) 16px 36px; background: rgb(var(--ui-deep) / .55); border-top: 1px solid var(--line-strong) }
 .empty { padding: 14px 0; color: var(--ink-2) }
 
 .work { display: flex; flex-direction: column; gap: 12px }
 .work-visual { display: block; box-sizing: border-box; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; margin-bottom: 6px; border: 1px solid var(--edge) }
-.work-title { font: 600 27px/1.2 var(--font-display); letter-spacing: .005em; overflow-wrap: anywhere }
-.meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 12.5px; color: var(--ink-2) }
+.work-title { font: 600 var(--t-3xl)/1.2 var(--font-display); letter-spacing: 0; overflow-wrap: anywhere }
+.meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: var(--t-xs); color: var(--ink-2) }
 .state { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 4px 8px; border: 1px solid var(--line-strong); color: var(--ink); font-weight: 500; line-height: 1.2 }
-.work-desc { margin-top: 4px; font-size: 14.5px; line-height: 1.95 }
-.tags { list-style: none; margin: 2px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: 12px; color: var(--ink-3) }
+.work-desc { margin-top: 4px; font-size: var(--t-lg); line-height: 1.95 }
+.tags { list-style: none; margin: 2px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: var(--t-xs); color: var(--ink-3) }
 .tags li::before { content: "#" }
 /* on a wide screen with the room on, the terminal beside the sheet shows the key visual; the sheet does not repeat it */
 @media (min-width: 701px) { :root[data-space="ready"][data-mode="room"] .work-visual { display: none } }
 
 .group + .group { margin-top: 30px }
-.group h3 { padding-bottom: 9px; border-bottom: 1px solid var(--line-strong); font-size: 12px; font-weight: 700; letter-spacing: .16em; color: var(--ink-3) }
+.group h3 { padding-bottom: 9px; border-bottom: 1px solid var(--line-strong); font-size: var(--t-xs); font-weight: 700; letter-spacing: var(--ls-caps); color: var(--ink-3) }
 .group > p { margin-top: 13px; line-height: 1.95 }
 .counts { display: flex; flex-wrap: wrap; margin: 18px 0 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line) }
 .counts div { flex: 1; min-width: 72px; padding: 10px 12px 9px 0 }
 .counts div + div { padding-left: 14px; border-left: 1px solid var(--line-faint) }
-.counts dt { font-size: 11.5px; color: var(--ink-3) }
-.counts dd { font: 400 26px/1.2 var(--font-display); font-variant-numeric: tabular-nums }
+.counts dt { font-size: var(--t-xs); color: var(--ink-3) }
+.counts dd { font: 400 var(--t-3xl)/1.2 var(--font-display); font-variant-numeric: tabular-nums }
 .link-list { list-style: none; margin: 0; padding: 0 }
 .link-list li { border-bottom: 1px solid var(--line-faint) }
 .link-list a { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 46px; text-decoration: none }
@@ -247,8 +254,8 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 .link-list a:active { background: var(--wash-2) }
 
 .row { min-width: 0; margin: 0; padding: 15px 0 16px; border: 0; border-bottom: 1px solid var(--line-faint) }
-.row legend, .row-label { float: left; width: 100%; padding: 0; font-size: 14.5px; font-weight: 700 }
-.hint { clear: both; padding-top: 4px; font-size: 12px; line-height: 1.75; color: var(--ink-2) }
+.row legend, .row-label { float: left; width: 100%; padding: 0; font-size: var(--t-lg); font-weight: 700 }
+.hint { clear: both; padding-top: 4px; font-size: var(--t-xs); line-height: 1.75; color: var(--ink-2) }
 .row .btn { margin-top: 11px }
 .row:disabled { opacity: .5 }
 .row:disabled input { cursor: not-allowed }
@@ -256,7 +263,7 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 .seg label { position: relative; display: block; margin-left: -1px; border-left: 1px solid var(--line) }
 .seg label:first-child { margin-left: 0; border-left: 0 }
 .seg input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer }
-.seg span { display: flex; align-items: center; min-height: 36px; padding: 0 14px; font-size: 13px; color: var(--ink-2); transition: background-color .15s }
+.seg span { display: flex; align-items: center; min-height: 36px; padding: 0 14px; font-size: var(--t-sm); color: var(--ink-2); transition: background-color .15s }
 .seg label:hover span { background: var(--wash) }
 .seg label:active span { background: var(--wash-2) }
 .seg input:checked + span { background: var(--wash-2); color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent) }
@@ -265,7 +272,7 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 #qualityNow:empty { display: none }
 /* what each quality level does: the chosen one is read first, the rest stay in reach */
 .about { margin-top: -4px; padding-bottom: 12px; border-bottom: 1px solid var(--line-faint) }
-.about div { display: grid; grid-template-columns: 58px 1fr; gap: 10px; padding: 3px 0; font-size: 12px; line-height: 1.7; color: var(--ink-3) }
+.about div { display: grid; grid-template-columns: 58px 1fr; gap: 10px; padding: 3px 0; font-size: var(--t-xs); line-height: 1.75; color: var(--ink-3) }
 .about dt { white-space: nowrap }
 .about div.is-on { color: var(--ink) }
 .about div.is-on dt { font-weight: 700 }
@@ -274,22 +281,22 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 #tags { position: fixed; inset: 0; pointer-events: none; overflow: hidden }
 .tag { position: absolute; left: 0; top: 0; isolation: isolate; --surface: var(--deep); --cut: 8px; display: flex; align-items: baseline; gap: 10px; padding: 6px 15px 7px; white-space: nowrap; opacity: 0; transition: opacity .2s }
 .tag.is-on { opacity: 1 }
-.tag-area { font-size: 11px; font-weight: 700; letter-spacing: .14em; color: var(--accent) }
-.tag-work { font-size: 12.5px; line-height: 1.2 }
+.tag-area { font-size: var(--t-2xs); font-weight: 700; letter-spacing: var(--ls-caps); color: var(--accent) }
+.tag-work { font-size: var(--t-sm); line-height: 1.2 }
 :root[data-view="sheet"] .tag, :root[data-ui="hidden"] .tag, :root:not([data-space="ready"]) .tag { opacity: 0 }
 /* the note about loading: small, in a corner, never in the way of the lobby */
 .space-note { position: absolute; left: 0; bottom: calc(var(--dock-h) + 22px + env(safe-area-inset-bottom, 0px)); isolation: isolate; --surface: var(--deep); --cut: 14px; box-sizing: border-box; max-width: min(520px, calc(100% - 32px));
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 8px 30px 9px max(16px, env(safe-area-inset-left, 0px)); font-size: 12.5px; line-height: 1.5 }
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 8px 30px 9px max(16px, env(safe-area-inset-left, 0px)); font-size: var(--t-sm); line-height: 1.5 }
 .note-mark { width: 8px; height: 8px; border: 1px solid var(--accent); box-sizing: border-box }
 :root[data-space="loading"] .note-mark { animation: turn 2.4s var(--ease) infinite }
 @keyframes turn { 0% { transform: rotate(0) } 50% { transform: rotate(90deg); background: var(--accent) } 100% { transform: rotate(180deg) } }
-.note-pct { font: 500 12px/1 var(--font-display); font-variant-numeric: tabular-nums; color: var(--ink-2) }
+.note-pct { font: 500 var(--t-xs)/1 var(--font-display); font-variant-numeric: tabular-nums; color: var(--ink-2) }
 .note-pct:empty { display: none }
-.note-action { display: inline-flex; align-items: center; gap: 5px; min-height: 30px; padding: 0 11px; border: 1px solid var(--line-strong); font-size: 12px }
+.note-action { display: inline-flex; align-items: center; gap: 5px; min-height: 30px; padding: 0 11px; border: 1px solid var(--line-strong); font-size: var(--t-xs) }
 .note-action:hover { background: var(--wash) }
 .note-action:active { background: var(--wash-2) }
 :root[data-ui="hidden"] .space-note { display: none }
-.restore { position: fixed; right: max(14px, env(safe-area-inset-right, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); min-height: 44px; padding: 0 16px; background: var(--deep); border: 1px solid var(--edge); font-size: 12.5px; opacity: .62; transition: opacity .2s }
+.restore { position: fixed; right: max(14px, env(safe-area-inset-right, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); min-height: 44px; padding: 0 16px; background: var(--deep); border: 1px solid var(--edge); font-size: var(--t-sm); opacity: .62; transition: opacity .2s }
 .restore:hover, .restore:focus-visible { opacity: 1 }
 .noscript { position: fixed; inset: auto 0 0; margin: 0; padding: 14px; background: rgb(34 58 98); text-align: center }
 
@@ -307,18 +314,18 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 @media (max-width: 980px) {
   .dock { width: calc(100% - 48px) }
   .dock-list { padding: 0 30px }
-  .dock-list a { gap: 7px; font-size: 13px }
+  .dock-list a { gap: 7px; font-size: var(--t-sm) }
   .topics { width: 340px }
 }
 
 /* ---------------------------------------------------------------- phones: the same slabs, laid out for a thumb */
 @media (max-width: 700px) {
-  :root { --bar-h: 44px; --dock-h: 58px }
+  :root { --bar-h: 44px; --dock-h: 58px; --t-3xl: 24px }
   .bar { padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); gap: 10px }
-  .bar-brand { font-size: 13.5px; gap: 8px }
+  .bar-brand { font-size: var(--t-md); gap: 8px }
   .bar-sub, .bar-date { display: none }
   .bar-env { gap: 10px }
-  .bar-sky { padding-left: 10px; font-size: 13.5px }
+  .bar-sky { padding-left: 10px; font-size: var(--t-sm) }
   .lobby { bottom: calc(var(--dock-h) + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; justify-content: flex-end; gap: 14px; padding-bottom: 16px }
   .topics, .updates { position: relative; top: auto }
   .topics { left: 0; box-sizing: border-box; width: 100%; padding: 0 max(14px, env(safe-area-inset-right, 0px)) 0 max(14px, env(safe-area-inset-left, 0px)) }
@@ -336,18 +343,18 @@ h1, h2, h3, p, dl, dd { margin: 0 }
   .seg span { min-height: 44px }
   .dock { width: 100%; --cut: 16px }
   .dock-list { padding: 0 12px }
-  .dock-list a { flex-direction: column; gap: 5px; font-size: 10.5px; letter-spacing: 0 }
+  .dock-list a { flex-direction: column; gap: 5px; font-size: var(--t-2xs); letter-spacing: 0 }
   .dock-list li + li::before { display: none }
   .sheet { left: 0; width: auto; bottom: calc(var(--dock-h) + env(safe-area-inset-bottom, 0px)); --cut: 20px; transform: translateY(104%) }
   .sheet-head { padding: 20px 14px 14px 20px }
-  .sheet-head h2 { font-size: 19px }
+  .sheet-head h2 { font-size: var(--t-2xl) }
   .work-list a { padding: 0 14px 0 34px }
   .sheet-body { padding: 18px 16px 24px 20px }
   .sheet-foot { padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px)) 20px }
-  .work-title { font-size: 24px }
+  .work-title { font-size: var(--t-3xl) }
   .space-note { bottom: auto; top: calc(var(--bar-h) + env(safe-area-inset-top, 0px) + 12px) }
 }
-@media (max-width: 359px) { .bar-phase { display: none } .dock-list a { font-size: 9.5px } }
+@media (max-width: 379px) { .bar-phase { display: none } .dock-list a { font-size: 10px } }
 /* short, wide screens (a phone on its side): keep the topics, drop the update */
 @media (min-width: 701px) and (max-height: 460px) { .updates { display: none } .topics { top: 14px; width: 300px } }
 
