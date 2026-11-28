@@ -1,0 +1,42 @@
+/* Sources of the topic banners. One block per banner; nothing is shared but the size. */
+body { margin: 24px; background: #20242c; display: grid; gap: 24px; justify-content: start; font-family: 'Zen Kaku Gothic New', sans-serif }
+.banner { position: relative; width: 420px; height: 180px; overflow: hidden; color: #fff }
+.banner p { margin: 0; position: absolute }
+.banner img { position: absolute; display: block }
+
+/* ---- DOPASWEEPER: the game's own neon on near-black, over a board of half-opened cells */
+.b-dopasweeper { background: #0a0618 }
+.b-dopasweeper .cells { position: absolute; left: -6px; top: -9px; width: 432px; display: grid; grid-template-columns: repeat(16, 27px); grid-auto-rows: 27px; transform: rotate(-6deg) scale(1.12); transform-origin: 30% 50% }
+.b-dopasweeper .cells i { box-sizing: border-box; border: 1px solid rgb(120 90 255 / .16) }
+.b-dopasweeper .cells i.on { background: rgb(120 90 255 / .1) }
+.b-dopasweeper .cells i.c0 { background: rgb(40 230 160 / .16) } .b-dopasweeper .cells i.c2 { background: rgb(255 60 170 / .15) }
+.b-dopasweeper .art { right: -14px; top: 50%; width: 250px; height: 156px; object-fit: cover; transform: translateY(-50%); -webkit-mask-image: radial-gradient(ellipse 62% 66% at 54% 50%, #000 70%, transparent 100%); mask-image: radial-gradient(ellipse 62% 66% at 54% 50%, #000 70%, transparent 100%) }
+.b-dopasweeper .kind { left: 22px; top: 22px; padding: 3px 9px 4px; border: 1px solid #2ee6a0; color: #2ee6a0; font-size: 10.5px; font-weight: 700; letter-spacing: .12em }
+.b-dopasweeper .line { left: 22px; bottom: 24px; font-size: 19.5px; font-weight: 900; line-height: 1.32; letter-spacing: .02em; background: linear-gradient(100deg, #2ee6a0, #38b6ff 55%, #ff48b0); -webkit-background-clip: text; background-clip: text; color: transparent }
+
+/* ---- PoseRef: the tool's dark viewport, cropped to the mannequin, with studio-like lettering */
+.b-poseref { background: #14171c }
+.b-poseref .shot { left: 150px; top: -78px; width: 500px; height: auto }
+.b-poseref .veil { position: absolute; inset: 0; background: linear-gradient(90deg, #14171c 0, #14171c 40%, rgb(20 23 28 / .7) 52%, rgb(20 23 28 / 0) 66%) }
+.b-poseref .kind { left: 24px; top: 24px; font-size: 10.5px; font-weight: 700; letter-spacing: .2em; color: #7fb0ff }
+.b-poseref .kind::after { content: ""; display: inline-block; width: 26px; height: 1px; margin-left: 10px; vertical-align: middle; background: #7fb0ff }
+.b-poseref .name { left: 22px; top: 46px; font: 800 44px/1 'Sora', sans-serif; letter-spacing: -.02em }
+.b-poseref .line { left: 24px; bottom: 26px; font-size: 12.5px; font-weight: 500; line-height: 1.6; color: #c9d2de }
+
+/* ---- Blue Archive DB: the app's white and blue, slanted like its own tabs, with an honest "in development" */
+.b-badb { background: #eaf4ff; color: #0c2c52 }
+.b-badb .shot { right: -70px; top: -16px; width: 380px; height: auto; transform: rotate(5deg); outline: 1px solid rgb(12 44 82 / .2) }
+.b-badb .slab { position: absolute; left: -40px; top: -20px; width: 300px; height: 240px; background: #1e8fff; transform: skewX(-14deg) }
+.b-badb .kind { left: 24px; top: 24px; font-size: 10.5px; font-weight: 700; letter-spacing: .16em; color: #d8ecff }
+.b-badb .name { left: 22px; top: 50px; width: 200px; font: 800 29px/1.08 'Sora', sans-serif; font-style: italic; letter-spacing: -.01em; color: #fff }
+.b-badb .line { left: 24px; bottom: 26px; width: 200px; font-size: 11.5px; font-weight: 700; line-height: 1.5; color: #eaf4ff }
+.b-badb .stamp { right: 18px; bottom: 18px; padding: 5px 12px 6px; background: #0c2c52; color: #fff; font-size: 12px; font-weight: 700; letter-spacing: .2em; transform: skewX(-14deg) }
+
+/* ---- the lobby itself: a view of the room at dusk, with quiet type */
+.b-lobby { background: #5a4f86 }
+.b-lobby .room { left: 0; top: 50%; width: 420px; height: auto; transform: translateY(-46%) scale(1.5); transform-origin: 62% 58% }
+.b-lobby::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgb(46 40 92 / .78), rgb(46 40 92 / .3) 55%, rgb(46 40 92 / 0)) }
+.b-lobby p { z-index: 1 }
+.b-lobby .kind { left: 24px; top: 24px; padding: 0 0 5px; border-bottom: 1px solid rgb(255 255 255 / .7); font-size: 10.5px; font-weight: 500; letter-spacing: .3em }
+.b-lobby .name { left: 24px; top: 62px; font-size: 25px; font-weight: 500; line-height: 1.36; letter-spacing: .06em }
+.b-lobby .line { left: 24px; bottom: 22px; font: 400 10.5px/1 'Sora', sans-serif; letter-spacing: .24em; color: rgb(255 255 255 / .86) }

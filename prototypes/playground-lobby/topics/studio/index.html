@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex">
+  <title>最新トピックのバナー原稿</title>
+</head>
+<body>
+  <!-- Each .banner is the source of one image in topics/banners/. scripts/render-banners.mjs photographs them
+       at three times this size (1260x540). Every banner has its own look on purpose: the carousel is where the
+       variety of the works shows. Open this page on the dev server to edit: /topics/studio/index.html -->
+
+  <div class="banner b-dopasweeper" id="dopasweeper-play">
+    <div class="cells" aria-hidden="true"></div>
+    <img class="art" data-work="dopasweeper" alt="">
+    <p class="kind">ミニゲーム</p>
+    <p class="line">60秒で、<br>どこまで開けるか。</p>
+  </div>
+
+  <div class="banner b-poseref" id="poseref-tool">
+    <img class="shot" data-work="poseref" alt="">
+    <div class="veil" aria-hidden="true"></div>
+    <p class="kind">ツール</p>
+    <p class="name" lang="en">PoseRef</p>
+    <p class="line">マネキンを動かして、<br>ポーズと構図の参考画像を作る。</p>
+  </div>
+
+  <div class="banner b-badb" id="blue-archive-db-wip">
+    <img class="shot" data-work="blue-archive-db" alt="">
+    <div class="slab" aria-hidden="true"></div>
+    <p class="kind">Webアプリ</p>
+    <p class="name" lang="en">Blue Archive DB</p>
+    <p class="line">育成状況も編成も、ブラウザだけで。</p>
+    <p class="stamp">開発中</p>
+  </div>
+
+  <div class="banner b-lobby" id="lobby-prototype">
+    <img class="room" data-still="evening-water" alt="">
+    <p class="kind">お知らせ</p>
+    <p class="name">新しいロビーを<br>試作しています</p>
+    <p class="line" lang="en">Pirafu2411 Playground</p>
+  </div>
+
+  <script type="module" src="./studio.js"></script>
+</body>
+</html>
