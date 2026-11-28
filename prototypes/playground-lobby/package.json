@@ -1,9 +1,9 @@
 {
   "name": "pirafu-playground-lobby-prototype",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
-  "description": "Stand-alone prototype of the Pirafu2411 Playground lobby: web UI over a 3D room. Not part of the production build. Needs `npm ci` at the repository root (Vite, fonts, sharp, Playwright) and `npm install` here. See 運用手順.md.",
+  "description": "Stand-alone prototype of the Pirafu2411 Playground lobby: web UI over a 3D room. Not part of the production build. Needs `npm ci` at the repository root (Vite, the Latin font, sharp, Playwright) and `npm install` here. See 運用手順.md.",
   "scripts": {
     "assets": "node scripts/prepare-lobby.mjs",
     "dev": "node scripts/prepare-lobby.mjs && vite --host 127.0.0.1 --port 5175 --strictPort",
@@ -17,6 +17,7 @@
     "measure": "node scripts/measure.mjs"
   },
   "dependencies": {
+    "@fontsource/m-plus-2": "5.3.1",
     "three": "0.187.0"
   },
   "devDependencies": {

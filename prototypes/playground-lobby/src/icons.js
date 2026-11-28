@@ -21,11 +21,8 @@ const PATHS = {
   next: '<path d="M10 6.5l5.5 5.5-5.5 5.5"/>',
 }
 
-// edged: the icon stands on the room with no slab behind it, so its lines are drawn twice, a wider copy underneath
-// in the edge colour (style.css, .icon-edge). That keeps the lines themselves as thin as they were.
-export function icon(name, size = 20, { edged = false } = {}) {
-  const paths = PATHS[name] ?? ''
-  return `<svg class="icon" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" focusable="false">${edged ? `<g class="icon-edge">${paths}</g>` : ''}${paths}</svg>`
+export function icon(name, size = 20) {
+  return `<svg class="icon" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" focusable="false">${PATHS[name] ?? ''}</svg>`
 }
 
 // The site's mark: the pixel "P" of the portal's favicon, in one colour so that it sits in the title bar.

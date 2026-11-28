@@ -124,7 +124,7 @@ function renderUpdates() {
   if (!u) return
   $('updates').innerHTML = `<div class="upd-head">
       <h2 class="eyebrow" id="updatesTitle">更新情報</h2>
-      <a class="more" href="#/updates">更新履歴を見る${icon('next', 14, { edged: true })}</a>
+      <a class="more" href="#/updates">更新履歴を見る${icon('next', 14)}</a>
     </div>
     <div class="upd-slab" data-frame="right">
       <p class="upd-latest"><time datetime="${u.date}">${u.date.replaceAll('-', '.')}</time><span>${u.workId ? `<a href="#/${u.area}/${u.workId}">${esc(u.text)}</a>` : esc(u.text)}</span></p>
