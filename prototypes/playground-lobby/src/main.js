@@ -32,6 +32,8 @@ const DATA = await fetch(BASE_URL + 'assets/lobby.json').then((r) => r.json())
 const WORKS = DATA.works
 // The Japanese font is large (hundreds of @font-face rules). It is fetched after the first paint, like on the portal.
 import('./fonts-ja.js')
+// development only: compare candidate fonts on the real screens (src/dev/font-lab.js); dropped from every build
+if (import.meta.env.DEV) import('./dev/font-lab.js')
 
 // The entries of the dock. The first four are areas of works, each tied to one terminal of the 3D room.
 const AREAS = [
