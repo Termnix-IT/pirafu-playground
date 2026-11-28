@@ -22,6 +22,9 @@
   --accent: #b9e7ff; --paper: #f4f8fc; --paper-ink: #132c4a;
   /* type and marks that sit directly on the room, with no slab under them: dark on the bright sky, light at night */
   --on-room: #0e2545;
+  /* ...and a hairline round each of them in the opposite tone, which keeps them whole where a vine or an arch
+     of the room passes behind */
+  --edge-light: rgb(255 255 255 / .9); --edge-dark: rgb(8 18 42 / .78); --on-room-edge: var(--edge-light);
   --bar-h: 38px; --dock-h: 56px;
   --ease: cubic-bezier(.2, .8, .2, 1);
   --font-display: 'Sora', 'Zen Kaku Gothic New', system-ui, sans-serif;
@@ -32,7 +35,7 @@
 }
 :root[data-phase="morning"] { --ui-deep: 40 64 102; --ui: 54 82 122; --ui-soft: 76 104 144; --sky: linear-gradient(#3f7fd0, #cfe6f8 60%, #f4ece6) }
 :root[data-phase="evening"] { --ui-deep: 44 50 98; --ui: 58 66 116; --ui-soft: 82 90 140; --accent: #ffd9c2; --on-room: #1d1542; --sky: linear-gradient(#4a5eae, #e7a79c 58%, #f6cdb4) }
-:root[data-phase="night"] { --ui-deep: 42 62 108; --ui: 58 80 128; --ui-soft: 78 100 148; --edge: rgb(206 224 255 / .42); --on-room: #f2f6ff; --sky: linear-gradient(#060d26, #172a58 64%, #22386c) }
+:root[data-phase="night"] { --ui-deep: 42 62 108; --ui: 58 80 128; --ui-soft: 78 100 148; --edge: rgb(206 224 255 / .42); --on-room: #f2f6ff; --on-room-edge: var(--edge-dark); --sky: linear-gradient(#060d26, #172a58 64%, #22386c) }
 :root[data-opaque] { --a-deep: 1; --a: 1; --a-soft: 1 }
 
 html, body { height: 100%; margin: 0 }
@@ -83,8 +86,9 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 /* ---------------------------------------------------------------- headings of the two groups on the lobby
    Plain type on the room, just above what it names. Nearness and a shared left edge do the grouping. */
 .eyebrow { color: var(--on-room); font-size: 16px; font-weight: 700; line-height: 1; letter-spacing: .1em }
-/* the update's heading starts where the text inside its slab starts */
-.updates .eyebrow { padding-left: 24px }
+/* The edge is a stroke painted under the fill: twice the width that shows, and the letters keep their own shape. */
+.eyebrow, .more { -webkit-text-stroke: 2px var(--on-room-edge); paint-order: stroke fill }
+.icon-edge { stroke: var(--on-room-edge); stroke-width: 4.8 }
 
 /* ---------------------------------------------------------------- lobby */
 .lobby { position: absolute; inset: var(--bar-h) 0 var(--dock-h); pointer-events: none }
@@ -109,7 +113,7 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 .tp-bar { display: flex; align-items: center; height: 32px; margin-top: 6px; color: var(--on-room) }
 .tp-dots { display: flex; margin: 0 auto 0 -3px; padding: 0; list-style: none }
 .tp-dots button { display: grid; place-items: center; width: 38px; height: 32px; padding: 0 3px; box-sizing: border-box }
-.tp-dots i { position: relative; display: block; width: 100%; height: 4px; background: color-mix(in srgb, currentColor 34%, transparent); overflow: hidden }
+.tp-dots i { position: relative; display: block; width: 100%; height: 4px; background: color-mix(in srgb, currentColor 34%, transparent); outline: 1px solid var(--on-room-edge); overflow: hidden }
 .tp-dots i::after { content: ""; position: absolute; inset: 0; background: currentColor; transform: scaleX(0); transform-origin: left }
 .tp-dots button:hover i { height: 6px; background: color-mix(in srgb, currentColor 50%, transparent) }
 .tp-dots button[aria-current] i::after { transform: scaleX(1) }
@@ -123,14 +127,20 @@ h1, h2, h3, p, dl, dd { margin: 0 }
 .tp-pause:active .icon, .tp-step:active .icon { transform: scale(.92) }
 .tp-bar :focus-visible { outline-color: var(--on-room); outline-offset: -3px }
 
-/* 更新情報: one line of what changed last. Quiet by design; the topics are what asks for attention. */
-.updates { position: absolute; right: 0; top: 30px; width: clamp(248px, 17vw, 320px); display: flex; flex-direction: column; gap: 10px }
-.upd-slab { position: relative; isolation: isolate; --surface: var(--soft); --cut: 16px; box-sizing: border-box; width: 100%; padding: 11px max(16px, env(safe-area-inset-right, 0px)) 9px 24px }
-.upd-latest { display: flex; flex-direction: column; gap: 4px }
+/* 更新情報: one line of what changed last. Quiet by design; the topics are what asks for attention.
+   Heading and the way to the history stand on the room, in one row; the slab under them holds the date and the
+   text side by side. A long text wraps inside its own column, under itself. */
+.updates { position: absolute; right: 0; top: 30px; width: clamp(292px, 18vw, 360px); display: flex; flex-direction: column; gap: 9px }
+.upd-head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 22px; color: var(--on-room) }
+.upd-slab { position: relative; isolation: isolate; --surface: var(--soft); --cut: 12px; box-sizing: border-box; width: 100%; padding: 8px max(16px, env(safe-area-inset-right, 0px)) 8px 22px }
+.upd-latest { display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 12px }
 .upd-latest time, .upd-list time { font: 500 11px/1 var(--font-display); letter-spacing: .06em; color: var(--ink-3); font-variant-numeric: tabular-nums }
 .upd-latest span { font-size: 13.5px; font-weight: 500; line-height: 1.5 }
-.more { display: inline-flex; align-items: center; gap: 1px; margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--line-faint); width: 100%; font-size: 12px; color: var(--ink-2); text-decoration: none }
-.more:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px }
+.more { display: inline-flex; align-items: center; gap: 1px; margin: -7px 0; padding: 7px 0; font-size: 12.5px; font-weight: 500; line-height: 1; white-space: nowrap; text-decoration: none }
+.more:hover { text-decoration: underline; text-underline-offset: 4px }
+.more .icon { transition: transform .15s var(--ease) }
+.more:hover .icon { transform: translateX(2px) }
+.more:focus-visible { outline-color: var(--on-room) }
 .upd-latest a, .upd-list a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: var(--line-strong) }
 .upd-latest a:hover, .upd-list a:hover { text-decoration-color: currentColor }
 .upd-list { list-style: none; margin: 0; padding: 0 }
@@ -312,14 +322,13 @@ h1, h2, h3, p, dl, dd { margin: 0 }
   .topics { left: 0; box-sizing: border-box; width: 100%; padding: 0 max(14px, env(safe-area-inset-right, 0px)) 0 max(14px, env(safe-area-inset-left, 0px)) }
   /* With the sky alone behind a phone's lobby, the horizon runs just under the topics' heading: the heading is on
      the bright sky, everything below it on the sea, which is dark at every hour. (The sea of clouds is bright.) */
-  :root[data-space="sky"]:not([data-scene="cloud"]) :is(.tp-bar, .updates .eyebrow) { --on-room: var(--ink) }
+  :root[data-space="sky"]:not([data-scene="cloud"]) :is(.tp-bar, .upd-head) { --on-room: var(--ink); --on-room-edge: var(--edge-dark) }
   .tp-view { --cut: 20px }
   .tp-bar { height: 40px }
   .tp-dots button, .tp-pause, .tp-step { height: 40px }
   .tp-pause, .tp-step { width: 38px }
   .updates { align-self: flex-end; width: calc(100% - 84px) }
-  .upd-slab { padding-bottom: 0 }
-  .more { min-height: 42px; margin-top: 8px; padding-top: 0 }
+  .more { margin: -15px 0; padding: 15px 0 }
   .btn, .close { min-height: 44px }
   .btn.big { min-height: 50px }
   .seg span { min-height: 44px }

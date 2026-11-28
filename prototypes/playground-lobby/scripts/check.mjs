@@ -74,6 +74,11 @@ if (!only || only === 'pc') {
     return banner >= 24 && Math.abs(left('#topicsTitle') - banner) <= 1 && Math.abs(left('.tp-dots i') - banner) <= 1
       && Math.abs(document.querySelector('.tp-step:last-child .icon').getBoundingClientRect().right - document.querySelector('.tp-view').getBoundingClientRect().right) <= 2
   }))
+  check('updates: heading and the way to the history share one row above the slab; date and text share one row inside it', await page.evaluate(() => {
+    const box = (s) => document.querySelector(s).getBoundingClientRect()
+    const head = box('.upd-head'), title = box('#updatesTitle'), more = box('.updates .more'), slab = box('.upd-slab'), date = box('.upd-latest time'), text = box('.upd-latest span')
+    return more.left > title.right && more.bottom <= slab.top + 8 && head.bottom <= slab.top && text.left > date.right && Math.abs(text.top - date.top) < 8 && slab.height <= 44
+  }))
   check('updates: the slab still reaches the right edge of the screen', await page.evaluate(() => document.querySelector('.upd-slab').getBoundingClientRect().right >= innerWidth - 1))
   check('topics: one mark per banner', await page.locator('.tp-dots button').count() === slides)
   check('topics: only the banner on show can be reached', await page.evaluate(() => [...document.querySelectorAll('.tp-slide')].filter((s) => !s.inert).length === 1))

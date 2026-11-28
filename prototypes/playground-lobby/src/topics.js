@@ -53,8 +53,8 @@ export function createTopics({ host, topics, baseUrl, reduced }) {
         ${many ? `<div class="tp-bar">
           <ol class="tp-dots">${list.map((t, i) => `<li><button type="button" data-i="${i}" aria-label="${i + 1}件目：${esc(t.title)}"><i></i></button></li>`).join('')}</ol>
           <button type="button" class="tp-pause" id="tpPause"></button>
-          <button type="button" class="tp-step" id="tpPrev" aria-label="前のトピック">${icon('prev', 20)}</button>
-          <button type="button" class="tp-step" id="tpNext" aria-label="次のトピック">${icon('next', 20)}</button>
+          <button type="button" class="tp-step" id="tpPrev" aria-label="前のトピック">${icon('prev', 20, { edged: true })}</button>
+          <button type="button" class="tp-step" id="tpNext" aria-label="次のトピック">${icon('next', 20, { edged: true })}</button>
         </div>
         <p class="sr" aria-live="polite" id="tpLive"></p>` : ''}
       </div>`
@@ -101,7 +101,7 @@ export function createTopics({ host, topics, baseUrl, reduced }) {
     // with reduced motion the banner never turns by itself, so there is nothing to pause
     b.hidden = reduced()
     b.setAttribute('aria-label', state.paused ? '自動切り替えを再開する' : '自動切り替えを止める')
-    b.innerHTML = icon(state.paused ? 'play' : 'pause', 20)
+    b.innerHTML = icon(state.paused ? 'play' : 'pause', 20, { edged: true })
   }
 
   // Puts slide i on show. dir: 1 the new one comes in from the right, -1 from the left, 0 no movement.
